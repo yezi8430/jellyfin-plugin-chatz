@@ -19,7 +19,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Subtitles;
 using Microsoft.Extensions.Hosting;
 
-namespace Jellyfin.Plugin.HelloWorld
+namespace Jellyfin.Plugin.Chatz
 {
     public class AuthenticationSuccessConsumer : IEventConsumer<AuthenticationResultEventArgs>
     {
@@ -555,7 +555,7 @@ namespace Jellyfin.Plugin.HelloWorld
 
             if (tasks.Count == 0)
             {
-                Console.WriteLine("[Notify] ⚠️ Gotify 与 Chatz 均未启用，消息未发送: " + title);
+                Console.WriteLine("[Notify] ⚠️ Chatz 与 Gotify 均未启用，消息未发送: " + title);
                 return;
             }
 

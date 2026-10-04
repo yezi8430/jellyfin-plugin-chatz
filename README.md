@@ -1,13 +1,14 @@
-# Gotify / Chatz 推送（Jellyfin 插件）
+# Chatz 推送（Jellyfin 插件）
 
-把 Jellyfin 的事件推送到 **Gotify** 或 **Chatz**，两者可以同时启用，同一条通知会分别推到两边。
+把 Jellyfin 的事件推送到 **Chatz** 或 **Gotify**，两者可以同时启用，同一条通知会分别推到两边。
 
 > 适用版本：**Jellyfin 12.x**（插件目标框架 net10.0，对应 Jellyfin.Controller 12.1.0）
 
 ## 特性
 
 - **8 类通知**：登录成功 / 登录失败、开始播放 / 停止播放、播放进度、新增媒体 / 删除媒体、字幕下载失败
-- **双推送目标**：Gotify 与 Chatz 独立开关，可同时开
+- **双推送目标**：Chatz 与 Gotify 独立开关，可同时开
+- **Webhook 转发**：插件以 webhook 端点方式（`POST /hook/{应用Token}`）推给 Chatz；在 Chatz 服务端配路由规则（调用 Webhook 动作），还能把匹配的消息转发到任意 HTTP 端点（ntfy、钉钉、飞书、自建服务等，服务端带 SSRF 防护）
 - **每类通知独立配置**：启用开关、优先级（0-10）、是否带封面
 - **自定义模板**：标题和内容都能改，支持变量（见下方对照表），留空用默认文案
 - **封面图**：把 Jellyfin 的封面地址直接塞进 `extras.image`，客户端/网页端都能显示
@@ -21,10 +22,10 @@
 ### 方式一：手动放 DLL（最简单）
 
 1. 到 [Releases](https://github.com/yezi8430/jellyfin-plugin-chatz/releases) 下载最新版本的 zip
-2. 解压出 `HelloWorldPlugin.dll`
+2. 解压出 `Chatz.dll`
 3. 放到 Jellyfin 的插件目录，例如：
    ```
-   <Jellyfin 配置目录>/plugins/helloworld/HelloWorldPlugin.dll
+   <Jellyfin 配置目录>/plugins/chatz/Chatz.dll
    ```
 4. 重启 Jellyfin
 
@@ -35,11 +36,11 @@
    ```
    https://raw.githubusercontent.com/yezi8430/jellyfin-plugin-chatz/main/manifest.json
    ```
-3. 在「目录（Catalog）」里找到 **Gotify / Chatz 推送** 安装，以后有新版本会提示更新
+3. 在「目录（Catalog）」里找到 **Chatz 推送** 安装，以后有新版本会提示更新
 
 ## 配置
 
-仪表盘 → 插件 → **Gotify / Chatz 推送**。
+仪表盘 → 插件 → **Chatz 推送**。
 
 ### 推送目标
 
@@ -97,7 +98,7 @@ JELLYFIN_PLUGIN_DIR=/你的/插件目录 bash build.sh
 
 ```bash
 dotnet build -c Release
-# 产物：bin/Release/net10.0/HelloWorldPlugin.dll
+# 产物：bin/Release/net10.0/Chatz.dll
 ```
 
 ### 发版

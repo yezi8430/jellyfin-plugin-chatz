@@ -51,10 +51,10 @@ jobs:
             *.*)     ASM="${VER}.0.0" ;;
             *)       ASM="${VER}.0.0.0" ;;
           esac
-          ZIP="GotifyChatzPush-${ASM}.zip"
+          ZIP="Chatz-${ASM}.zip"
           # -j：zip 里直接放 dll，不要带 bin/Release/... 的目录层级
           # （Jellyfin 解压后要能在根目录找到 dll）
-          zip -j "$ZIP" bin/Release/net10.0/HelloWorldPlugin.dll
+          zip -j "$ZIP" bin/Release/net10.0/Chatz.dll
           echo "tag=$TAG"      >> "$GITHUB_OUTPUT"
           echo "version=$ASM"  >> "$GITHUB_OUTPUT"
           echo "zip=$ZIP"      >> "$GITHUB_OUTPUT"

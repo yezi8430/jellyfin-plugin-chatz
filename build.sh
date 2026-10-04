@@ -37,7 +37,7 @@ docker run --rm \
   dotnet build -c Release --tl:off
 
 mkdir -p "$JELLYFIN_PLUGIN_DIR"
-cp bin/Release/net10.0/HelloWorldPlugin.dll "$JELLYFIN_PLUGIN_DIR/HelloWorldPlugin.dll"
+cp bin/Release/net10.0/Chatz.dll "$JELLYFIN_PLUGIN_DIR/Chatz.dll"
 
 if [ "${SKIP_RESTART:-0}" = "1" ]; then
     echo "== DLL 已替换；按 SKIP_RESTART=1 跳过重启，请手动重启 Jellyfin =="

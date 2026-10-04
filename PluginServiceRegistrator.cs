@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Jellyfin.Plugin.HelloWorld
+namespace Jellyfin.Plugin.Chatz
 {
     public class PluginServiceRegistrator : IPluginServiceRegistrator
     {

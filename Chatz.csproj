@@ -3,8 +3,8 @@
     <!-- Jellyfin 12.x 的包只支持 net10.0（12.0 起跟着 monorepo 升到 .NET 10），
          所以插件必须一起升；留在 net9.0 会直接还原失败（NU1202） -->
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>Jellyfin.Plugin.HelloWorld</RootNamespace>
-    <AssemblyName>HelloWorldPlugin</AssemblyName>
+    <RootNamespace>Jellyfin.Plugin.Chatz</RootNamespace>
+    <AssemblyName>Chatz</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -14,7 +14,7 @@
     <PackageLicenseExpression>GPL-2.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/yezi8430/jellyfin-plugin-chatz</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yezi8430/jellyfin-plugin-chatz</RepositoryUrl>
-    <Description>把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Gotify 或 Chatz</Description>
+    <Description>把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Chatz 或 Gotify</Description>
   </PropertyGroup>
   <ItemGroup>
     <!-- 用 Jellyfin.Common 提供的 DI 类型，不要单独引 Microsoft.Extensions.DependencyInjection -->

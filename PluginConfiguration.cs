@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using MediaBrowser.Model.Plugins;
 
-namespace Jellyfin.Plugin.HelloWorld
+namespace Jellyfin.Plugin.Chatz
 {
     public class NotificationTemplate
     {

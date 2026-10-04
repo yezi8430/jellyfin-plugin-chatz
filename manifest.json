@@ -1,9 +1,9 @@
 [
   {
     "guid": "75ff3c39-fe8d-42b6-b798-23f4256c5d60",
-    "name": "Gotify / Chatz 推送",
-    "description": "把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Gotify 或 Chatz",
-    "overview": "支持 8 类通知（登录成功/失败、开始/停止播放、播放进度、新增/删除媒体、字幕下载失败），每个通知可单独设置优先级、封面和自定义标题/内容模板；Gotify 与 Chatz 可同时启用。",
+    "name": "Chatz 推送",
+    "description": "把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Chatz 或 Gotify",
+    "overview": "支持 8 类通知（登录成功/失败、开始/停止播放、播放进度、新增/删除媒体、字幕下载失败），每个通知可单独设置优先级、封面和自定义标题/内容模板；Chatz 与 Gotify 可同时启用。插件以 webhook 端点方式推送给 Chatz，配合其服务端路由规则（调用 Webhook）可转发到任意 HTTP 端点。",
     "owner": "yezi8430",
     "category": "Notifications",
     "versions": [

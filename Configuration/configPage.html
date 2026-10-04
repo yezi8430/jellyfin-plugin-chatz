@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Gotify 通知设置</title>
+    <title>Chatz 推送设置</title>
 </head>
 <body>
     <div data-role="page" id="helloWorldConfigurationPage" class="page type-interior pluginConfigurationPage">
@@ -265,27 +265,12 @@
         </style>
         <div data-role="content">
             <div class="content-primary">
-                <h2>Gotify 通知设置</h2>
+                <h2>Chatz 推送设置</h2>
 
                 <div class="card ncfg-card">
                     <div class="card-header"><h3>推送目标</h3></div>
                     <div class="card-body">
-                        <p class="text-secondary">Gotify 与 Chatz 可以同时开启，同一条通知会分别推送到两边。</p>
-
-                        <div class="ncfg-target" id="gotifyBlock">
-                            <label class="ncfg-target-title">
-                                <input type="checkbox" id="chkGotifyEnabled" />
-                                <span>推送到 Gotify</span>
-                            </label>
-                            <div class="inputContainer">
-                                <input is="emby-input" type="text" id="txtGotifyUrl" label="Gotify 服务器地址:" />
-                                <span>例如：https://mess.example.com</span>
-                            </div>
-                            <div class="inputContainer">
-                                <input is="emby-input" type="password" id="txtGotifyToken" label="Gotify 应用 Token:" />
-                                <span>在 Gotify 服务端创建应用后获得的 Token</span>
-                            </div>
-                        </div>
+                        <p class="text-secondary">Chatz 与 Gotify 可以同时开启，同一条通知会分别推送到两边。</p>
 
                         <div class="ncfg-target" id="chatzBlock">
                             <label class="ncfg-target-title">
@@ -313,6 +298,21 @@
                                 Chatz 会把 5 分钟内「同应用 + 同频道 + 同标题」的消息聚合折叠成一条。
                                 若希望每条通知都独立显示，请在下方标题模板里带上变量（如 {itemName}）。
                             </p>
+                        </div>
+
+                        <div class="ncfg-target" id="gotifyBlock">
+                            <label class="ncfg-target-title">
+                                <input type="checkbox" id="chkGotifyEnabled" />
+                                <span>推送到 Gotify</span>
+                            </label>
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtGotifyUrl" label="Gotify 服务器地址:" />
+                                <span>例如：https://mess.example.com</span>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" type="password" id="txtGotifyToken" label="Gotify 应用 Token:" />
+                                <span>在 Gotify 服务端创建应用后获得的 Token</span>
+                            </div>
                         </div>
 
                         <div class="ncfg-target">
