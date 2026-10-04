@@ -103,6 +103,9 @@ dotnet build -c Release
 
 ### 发版
 
+> 完整的分步流程（自检 → 提交 → 打 tag → 更新 manifest → NAS 安装，以及踩过的坑）
+> 见 **[RELEASE.md](RELEASE.md)**。
+
 推一个 tag，GitHub Actions 会自动编译、打包 zip、发布 Release：
 
 ```bash
@@ -137,6 +140,7 @@ git push
 ├── Configuration/configPage.html    # 仪表盘里的配置页（HTML+CSS+JS 单文件）
 ├── manifest.json                    # 插件源清单（发版后由 bump-manifest.py 更新）
 ├── tools/bump-manifest.py           # 发版后生成本地 manifest 条目
+├── RELEASE.md                       # 发版 / 更新流程 + 常见坑
 └── .github/workflows/release.yml    # 打 tag 自动发版
 ```
 
