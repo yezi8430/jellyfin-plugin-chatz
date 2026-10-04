@@ -2,8 +2,8 @@
   {
     "guid": "75ff3c39-fe8d-42b6-b798-23f4256c5d60",
     "name": "Chatz 推送",
-    "description": "把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Chatz 或 Gotify",
-    "overview": "支持 8 类通知（登录成功/失败、开始/停止播放、播放进度、新增/删除媒体、字幕下载失败），每个通知可单独设置优先级、封面和自定义标题/内容模板；Chatz 与 Gotify 可同时启用。插件以 webhook 端点方式推送给 Chatz，配合其服务端路由规则（调用 Webhook）可转发到任意 HTTP 端点。",
+    "description": "把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Chatz 或 Gotify / Push Jellyfin events (sign-in, playback, library changes, subtitle failures) to Chatz or Gotify",
+    "overview": "支持 8 类通知（登录成功/失败、开始/停止播放、播放进度、新增/删除媒体、字幕下载失败），每个通知可单独设置优先级、封面和自定义标题/内容模板；Chatz 与 Gotify 可同时启用。插件以 webhook 端点方式推送给 Chatz，配合其服务端路由规则（调用 Webhook）可转发到任意 HTTP 端点。配置页跟随 Jellyfin 界面语言自动切换中文/英文。\n\nEnglish: 8 notification types (sign-in success/failure, playback start/stop, playback progress, media added/removed, subtitle download failure), each with its own priority, cover toggle and custom title/body template; Chatz and Gotify can run at the same time. The plugin pushes to Chatz through its webhook endpoint, and Chatz server-side routing rules (Call Webhook) can forward matching messages to any HTTP endpoint. The config page follows your Jellyfin interface language (Chinese / English).",
     "owner": "yezi8430",
     "category": "Notifications",
     "imageUrl": "https://raw.githubusercontent.com/yezi8430/jellyfin-plugin-chatz/main/images/logo.png?v=2",
