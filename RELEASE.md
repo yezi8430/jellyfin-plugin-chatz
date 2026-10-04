@@ -107,7 +107,14 @@ curl -s https://raw.githubusercontent.com/yezi8430/jellyfin-plugin-chatz/main/ma
 
 ```bash
 find /docker/jellyfin/config/plugins -name "*.dll"
+# 期望只出现一行 Chatz.dll，形如：
+#   /docker/jellyfin/config/plugins/Chatz 推送_1.0.3.0/Chatz.dll
+# 目录名里的中文在某些终端会显示成 ??????，那是 locale 不显示中文，不是文件名坏了
 ```
+
+> ⚠️ **升版尤其要复查**：Jellyfin 装新版本时会另建一个 `Chatz 推送_<新版本>` 目录，
+> 旧目录由它在重启时清理。所以**重启之后再跑一次上面的 find** ——
+> 真出现两个 `Chatz.dll`，把旧版本整个目录 `rm -rf` 掉再重启。
 
 ---
 
@@ -127,3 +134,10 @@ find /docker/jellyfin/config/plugins -name "*.dll"
 到 [Releases](https://github.com/yezi8430/jellyfin-plugin-chatz/releases) 下旧版本的 zip，
 解压出 `Chatz.dll` 覆盖回去，重启 Jellyfin。
 （manifest 里保留着历史版本的话，也可以直接在 Jellyfin 里选版本装。）
+
+## 换封面
+
+封面不是打进 dll 的，是 **manifest.json 的 `imageUrl` 字段**（指向 `images/logo.png` 的
+raw 地址）。Jellyfin 目录页拿它当卡片图，README 顶部也引用同一张。
+换图只要替换 `images/logo.png` 后 push；没生效就是缓存，Ctrl+F5 强刷。
+（合成脚本在 `.workbuddy/tmp/make_logo.py`：左 logo + 右 Chatz，背景渐变从 logo 采样。）

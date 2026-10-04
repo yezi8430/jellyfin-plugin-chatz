@@ -6,6 +6,7 @@
     "overview": "支持 8 类通知（登录成功/失败、开始/停止播放、播放进度、新增/删除媒体、字幕下载失败），每个通知可单独设置优先级、封面和自定义标题/内容模板；Chatz 与 Gotify 可同时启用。插件以 webhook 端点方式推送给 Chatz，配合其服务端路由规则（调用 Webhook）可转发到任意 HTTP 端点。",
     "owner": "yezi8430",
     "category": "Notifications",
+    "imageUrl": "https://raw.githubusercontent.com/yezi8430/jellyfin-plugin-chatz/main/images/logo.png",
     "versions": [
       {
         "version": "1.0.2.0",

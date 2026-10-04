@@ -1,5 +1,7 @@
 # Chatz 推送（Jellyfin 插件）
 
+<p align="center"><img src="images/logo.png" width="320" alt="Chatz 推送"></p>
+
 把 Jellyfin 的事件推送到 **Chatz** 或 **Gotify**，两者可以同时启用，同一条通知会分别推到两边。
 
 > 适用版本：**Jellyfin 12.x**（插件目标框架 net10.0，对应 Jellyfin.Controller 12.1.0）
@@ -138,6 +140,7 @@ git push
 ├── PluginConfiguration.cs           # 配置模型
 ├── PluginServiceRegistrator.cs       # DI 注册
 ├── Configuration/configPage.html    # 仪表盘里的配置页（HTML+CSS+JS 单文件）
+├── images/logo.png                  # 插件封面（Jellyfin 目录卡片 + 本页顶部）
 ├── manifest.json                    # 插件源清单（发版后由 bump-manifest.py 更新）
 ├── tools/bump-manifest.py           # 发版后生成本地 manifest 条目
 ├── RELEASE.md                       # 发版 / 更新流程 + 常见坑
