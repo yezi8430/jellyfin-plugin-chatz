@@ -103,15 +103,28 @@ dotnet build -c Release
 
 ### 发版
 
-推一个 tag，GitHub Actions 会自动编译、打包 zip、算出 checksum 更新 `manifest.json`、发布 Release：
+推一个 tag，GitHub Actions 会自动编译、打包 zip、发布 Release：
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-> `manifest.json` 里的 checksum 是 **打包后的 zip 的 MD5**，必须由 CI 生成 ——
-> 手写一定对不上，Jellyfin 下载时会校验失败。
+Release 出来之后，**还要在本地把版本写进 `manifest.json` 并 push**（CI 不代劳）：
+
+```bash
+python tools/bump-manifest.py v1.0.0
+git add manifest.json
+git commit -m "chore: 更新 manifest.json (1.0.0.0)"
+git push
+```
+
+> `manifest.json` 里的 checksum 是 **打包后的 zip 的 MD5**，只能拿到 zip 之后才算得出，
+> 手写一定对不上（Jellyfin 下载时会校验）。`bump-manifest.py` 会自己下载 Release 上的
+> zip、算 MD5、校验包内确实只有根目录一个 `Chatz.dll`，然后写进 manifest。
+>
+> 为什么不顺便让 CI 提交回主分支：CI checkout 的是 tag（detached HEAD），
+> push 回 main 要 fetch+rebase，实测不稳，而且它一改 main 你本地下次 push 就会被拒。
 
 ## 目录结构
 
@@ -122,7 +135,8 @@ git push origin v1.0.0
 ├── PluginConfiguration.cs           # 配置模型
 ├── PluginServiceRegistrator.cs       # DI 注册
 ├── Configuration/configPage.html    # 仪表盘里的配置页（HTML+CSS+JS 单文件）
-├── manifest.json                    # 插件源清单（CI 维护）
+├── manifest.json                    # 插件源清单（发版后由 bump-manifest.py 更新）
+├── tools/bump-manifest.py           # 发版后生成本地 manifest 条目
 └── .github/workflows/release.yml    # 打 tag 自动发版
 ```
 

@@ -79,24 +79,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # manifest.json 要让别人的 Jellyfin 能读到（插件源指向 raw.githubusercontent），
-      # 所以必须提交回主分支。tag push 时是 detached HEAD，push 要显式写目标分支。
-      - name: 提交 manifest.json 回主分支
+      # manifest.json 也作为 Release 资产一起上传，方便对照/回滚。
+      #
+      # ⚠️ 这里**故意不把 manifest.json 提交回主分支**。原因有两个：
+      #   1) CI checkout 的是 tag（detached HEAD），要写回 main 得 fetch+rebase+push，
+      #      实测不稳 —— v1.0.2 就出现了「Release 发了、zip 能下，但 main 上的
+      #      manifest 还是旧版本」的情况，用户在 Jellyfin 里根本看不到新版本。
+      #   2) CI 一改 main，你本地下次 push 就会被 non-fast-forward 拒绝（踩过一次）。
+      #
+      #   ⇒ 改成：本地跑 tools/bump-manifest.py <tag>，它会自动下 zip 算 MD5、
+      #     写进 manifest.json，你再 commit + push。
+      #      仓库只有你一个人写 manifest，永远不会冲突。
+      - name: 提示：记得更新 manifest.json
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add manifest.json
-          if git diff --cached --quiet; then
-            echo "manifest.json 没有变化，跳过提交"
-          else
-            git commit -m "chore: 更新 manifest.json (${{ steps.pack.outputs.version }})"
-            # ⚠️ CI checkout 的是 tag，而 main 上可能已经有别的提交
-            #    （最典型的就是上次发版时 CI 自己推回来的 manifest 更新）
-            #    ⇒ 不先 rebase，push 会被 non-fast-forward 拒绝，
-            #      结果就是 Release 发了、manifest 没更新，用户看不到新版本。
-            git fetch origin "${MAIN_BRANCH}"
-            git rebase "origin/${MAIN_BRANCH}" || git rebase --abort
-            git push origin "HEAD:refs/heads/${MAIN_BRANCH}"
-          fi
+          echo "::notice::Release ${{ steps.pack.outputs.tag }} 已发布。接下来在本地仓库执行："
+          echo "  python tools/bump-manifest.py ${{ steps.pack.outputs.tag }}"
+          echo "  git add manifest.json"
+          echo "  git commit -m 'chore: 更新 manifest.json (${{ steps.pack.outputs.version }})'"
+          echo "  git push"
         env:
           MAIN_BRANCH: main
