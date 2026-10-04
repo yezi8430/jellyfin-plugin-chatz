@@ -1,5 +1,7 @@
 # Chatz 推送（Jellyfin 插件）
 
+**中文** | [English](README.en.md)
+
 <p align="center"><img src="images/logo.png" width="320" alt="Chatz 推送"></p>
 
 把 Jellyfin 的事件推送到 **Chatz** 或 **Gotify**，两者可以同时启用，同一条通知会分别推到两边。
