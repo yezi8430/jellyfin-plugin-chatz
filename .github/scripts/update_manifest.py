@@ -11,10 +11,11 @@ CI 用：往 manifest.json 里追加一个版本条目。
   python .github/scripts/update_manifest.py <zip路径> <版本号> <下载URL> [更新日志]
 
   · 版本号：4 段，如 1.0.0.0（Jellyfin 要求）
-  · targetAbi：自动从 HelloWorldPlugin.csproj 里 Jellyfin.Controller 的版本推导，
+  · targetAbi：自动从仓库里的 .csproj 中 Jellyfin.Controller 的版本推导，
     不用手填 —— 免得升了 Jellyfin 包却忘了改这里，导致用户装不上
 """
 import hashlib
+import glob
 import io
 import json
 import re
@@ -31,7 +32,19 @@ def md5_of(path):
     return h.hexdigest()
 
 
-def target_abi_from_csproj(csproj='HelloWorldPlugin.csproj'):
+def find_csproj():
+    """自动找仓库根目录的 .csproj。
+
+    ⚠️ 不要写死文件名 —— 插件从 HelloWorldPlugin 改名为 Chatz 时这里没跟着改，
+    CI 直接 FileNotFoundError 挂掉（2026-10-04 踩过）。以后再改名也不会受影响。"""
+    found = sorted(glob.glob('*.csproj'))
+    if not found:
+        raise SystemExit('当前目录没有找到 .csproj，无法推导 targetAbi')
+    return found[0]
+
+
+def target_abi_from_csproj(csproj=None):
+    csproj = csproj or find_csproj()
     text = io.open(csproj, encoding='utf-8').read()
     m = re.search(r'Jellyfin\.Controller"\s+Version="(\d+)\.(\d+)\.(\d+)"', text)
     if not m:
