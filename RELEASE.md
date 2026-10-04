@@ -141,3 +141,24 @@ find /docker/jellyfin/config/plugins -name "*.dll"
 raw 地址）。Jellyfin 目录页拿它当卡片图，README 顶部也引用同一张。
 换图只要替换 `images/logo.png` 后 push；没生效就是缓存，Ctrl+F5 强刷。
 （合成脚本在 `.workbuddy/tmp/make_logo.py`：左 logo + 右 Chatz，背景渐变从 logo 采样。）
+
+## 改界面文案（中英双语）
+
+所有界面文案集中在 `Configuration/configPage.html` 的 `I18N` 字典里（`zh` / `en` 两套），
+打开页面时按 **Jellyfin 用户界面语言**自动挑一套，取不到英文就回落中文。
+
+- 静态文案：HTML 上标 `data-i18n` / `data-i18n-label` / `data-i18n-title` / `data-i18n-ph`
+- 动态文案（通知行、变量表）：直接 `t("key")`
+- 通知英文名在 `notificationDefs[].en`，变量英文名在 `VAR_DICT[].en` / `.noteEn`
+
+⚠️ 两个格式约束（`.workbuddy/check-plugin-vars.py` 靠正则校验，改坏了会报不一致）：
+1. `notificationDefs` 每行 `label` 后面必须紧跟 `vars`，`en` 只能放 `vars` 之后
+2. `VAR_DICT` 每行必须以 `{ cn:` 开头
+
+改完必跑：
+```bash
+node .workbuddy/smoke-plugin-page.js        # 中文模式
+node .workbuddy/tmp/smoke-en.js             # 英文模式（模拟 UICulture=en-US）
+python .workbuddy/check-plugin-vars.py      # 变量与 Consumers.cs 一致
+```
+配置页是 **EmbeddedResource**，改完必须重新编译 dll 才生效。

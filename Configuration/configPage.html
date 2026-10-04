@@ -265,36 +265,36 @@
         </style>
         <div data-role="content">
             <div class="content-primary">
-                <h2>Chatz 推送设置</h2>
+                <h2 data-i18n="pageTitle">Chatz 推送设置</h2>
 
                 <div class="card ncfg-card">
-                    <div class="card-header"><h3>推送目标</h3></div>
+                    <div class="card-header"><h3 data-i18n="secTarget">推送目标</h3></div>
                     <div class="card-body">
-                        <p class="text-secondary">Chatz 与 Gotify 可以同时开启，同一条通知会分别推送到两边。</p>
+                        <p class="text-secondary" data-i18n="targetIntro">Chatz 与 Gotify 可以同时开启，同一条通知会分别推送到两边。</p>
 
                         <div class="ncfg-target" id="chatzBlock">
                             <label class="ncfg-target-title">
                                 <input type="checkbox" id="chkChatzEnabled" />
-                                <span>推送到 Chatz</span>
+                                <span data-i18n="pushToChatz">推送到 Chatz</span>
                             </label>
                             <div class="inputContainer">
-                                <input is="emby-input" type="text" id="txtChatzUrl" label="Chatz 服务器地址:" />
-                                <span>例如：http://192.168.1.10:20010（只填到域名/端口，不要带 /hook）</span>
+                                <input is="emby-input" type="text" id="txtChatzUrl" label="Chatz 服务器地址:" data-i18n-label="chatzUrl" />
+                                <span data-i18n="chatzUrlHint">例如：http://192.168.1.10:20010（只填到域名/端口，不要带 /hook）</span>
                             </div>
                             <div class="inputContainer">
-                                <input is="emby-input" type="password" id="txtChatzToken" label="Chatz 应用 Token:" />
-                                <span>在 Chatz WebUI 创建「应用」后得到的应用 Token（不是全局 AUTH_TOKEN）</span>
+                                <input is="emby-input" type="password" id="txtChatzToken" label="Chatz 应用 Token:" data-i18n-label="chatzToken" />
+                                <span data-i18n="chatzTokenHint">在 Chatz WebUI 创建「应用」后得到的应用 Token（不是全局 AUTH_TOKEN）</span>
                             </div>
                             <div class="inputContainer">
-                                <div class="ncfg-label">Chatz 频道 ID（可选）</div>
+                                <div class="ncfg-label" data-i18n="chatzChannelId">Chatz 频道 ID（可选）</div>
                                 <input type="number" id="txtChatzChannelId" class="ncfg-field ncfg-num" min="0" value="0" />
-                                <div class="ncfg-hint">留空或 0 = 使用该应用自己的默认频道</div>
+                                <div class="ncfg-hint" data-i18n="chatzChannelIdHint">留空或 0 = 使用该应用自己的默认频道</div>
                             </div>
                             <div class="inputContainer">
-                                <input is="emby-input" type="text" id="txtChatzTags" label="Chatz 标签（可选）:" />
-                                <span>逗号分隔，例如：jellyfin,播放 —— 供 Chatz 路由规则匹配</span>
+                                <input is="emby-input" type="text" id="txtChatzTags" label="Chatz 标签（可选）:" data-i18n-label="chatzTags" />
+                                <span data-i18n="chatzTagsHint">逗号分隔，例如：jellyfin,播放 —— 供 Chatz 路由规则匹配</span>
                             </div>
-                            <p class="text-secondary" style="font-size:12px;margin-top:10px;">
+                            <p class="text-secondary" style="font-size:12px;margin-top:10px;" data-i18n="chatzAggHint">
                                 Chatz 会把 5 分钟内「同应用 + 同频道 + 同标题」的消息聚合折叠成一条。
                                 若希望每条通知都独立显示，请在下方标题模板里带上变量（如 {itemName}）。
                             </p>
@@ -303,64 +303,66 @@
                         <div class="ncfg-target" id="gotifyBlock">
                             <label class="ncfg-target-title">
                                 <input type="checkbox" id="chkGotifyEnabled" />
-                                <span>推送到 Gotify</span>
+                                <span data-i18n="pushToGotify">推送到 Gotify</span>
                             </label>
                             <div class="inputContainer">
-                                <input is="emby-input" type="text" id="txtGotifyUrl" label="Gotify 服务器地址:" />
-                                <span>例如：https://mess.example.com</span>
+                                <input is="emby-input" type="text" id="txtGotifyUrl" label="Gotify 服务器地址:" data-i18n-label="gotifyUrl" />
+                                <span data-i18n="gotifyUrlHint">例如：https://mess.example.com</span>
                             </div>
                             <div class="inputContainer">
-                                <input is="emby-input" type="password" id="txtGotifyToken" label="Gotify 应用 Token:" />
-                                <span>在 Gotify 服务端创建应用后获得的 Token</span>
+                                <input is="emby-input" type="password" id="txtGotifyToken" label="Gotify 应用 Token:" data-i18n-label="gotifyToken" />
+                                <span data-i18n="gotifyTokenHint">在 Gotify 服务端创建应用后获得的 Token</span>
                             </div>
                         </div>
 
                         <div class="ncfg-target">
                             <div class="inputContainer">
-                                <input is="emby-input" type="text" id="txtJellyfinServerUrl" label="Jellyfin 外部访问地址:" />
-                                <span>用于封面图片推送，例如：https://jellyfin.example.com</span>
+                                <input is="emby-input" type="text" id="txtJellyfinServerUrl" label="Jellyfin 外部访问地址:" data-i18n-label="jfUrl" />
+                                <span data-i18n="jfUrlHint">用于封面图片推送，例如：https://jellyfin.example.com</span>
                             </div>
                             <div class="inputContainer">
                                 <label class="ncfg-cover" style="font-size:14px;color:inherit;">
                                     <input type="checkbox" id="chkUseMarkdown" />
-                                    <span>启用 Markdown 模式（让网页端也能显示封面图片）</span>
+                                    <span data-i18n="useMarkdown">启用 Markdown 模式（让网页端也能显示封面图片）</span>
                                 </label>
-                                <div class="ncfg-hint">开启后消息体使用 Markdown 格式，网页端和 App 内可显示内联封面图</div>
+                                <div class="ncfg-hint" data-i18n="useMarkdownHint">开启后消息体使用 Markdown 格式，网页端和 App 内可显示内联封面图</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card ncfg-card">
-                    <div class="card-header"><h3>播放进度推送</h3></div>
+                    <div class="card-header"><h3 data-i18n="secProgress">播放进度推送</h3></div>
                     <div class="card-body">
                         <div class="ncfg-sub">
+                            <!-- ⚠️ label 里混着 input，文案必须单独用 <span> 包起来：
+                                 直接给 label 设 textContent 会把里面的 input 一起干掉 -->
                             <div class="ncfg-row">
                                 <label>
                                     <input type="checkbox" id="chkProgressEnabled" class="ncfg-check" />
-                                    启用播放进度推送
+                                    <span data-i18n="progressEnable">启用播放进度推送</span>
                                 </label>
                                 <label>
-                                    达到
+                                    <span data-i18n="progressAt">达到</span>
                                     <input type="number" id="txtProgressPercent" class="ncfg-field ncfg-num" min="1" max="100" value="90" />
-                                    % 时推送通知
+                                    <span data-i18n="progressNotifyAt">% 时推送通知</span>
                                 </label>
                                 <label>
-                                    冷却时间
+                                    <span data-i18n="cooldown">冷却时间</span>
                                     <input type="number" id="txtProgressCooldown" class="ncfg-field ncfg-num" min="0" max="120" value="10" />
-                                    分钟（同一集在冷却期内不重复推送）
+                                    <span data-i18n="cooldownUnit">分钟（同一集在冷却期内不重复推送）</span>
                                 </label>
                             </div>
-                            <div class="ncfg-hint" style="margin-top:10px;">
+                            <div class="ncfg-hint" style="margin-top:10px;" data-i18n="progressHint">
                                 每集首次达到设定百分比时推送一次。冷却时间过后（或播放下一集）会再次推送，不会漏通知。
                             </div>
                             <div class="ncfg-row">
                                 <label>
                                     <input type="checkbox" id="chkSkipStopAfterProgress" class="ncfg-check" />
-                                    已推送过进度的这一集，不再推送「停止播放」
+                                    <span data-i18n="skipStop">已推送过进度的这一集，不再推送「停止播放」</span>
                                 </label>
                             </div>
-                            <div class="ncfg-hint">
+                            <div class="ncfg-hint" data-i18n="skipStopHint">
                                 追剧连播时每集都会先到阈值（进度通知）再播完（停止通知），去掉后者能省掉一半噪音。
                                 没到阈值就手动停止的，仍会照常推送。
                             </div>
@@ -369,24 +371,24 @@
                 </div>
 
                 <div class="card ncfg-card">
-                    <div class="card-header"><h3>通知类型与自定义模板</h3></div>
+                    <div class="card-header"><h3 data-i18n="secNotifications">通知类型与自定义模板</h3></div>
                     <div class="card-body">
-                        <p class="text-secondary">勾选启用通知。每个通知可单独设置优先级（0-10）和封面推送。标题和内容均可自定义，留空则使用默认值。</p>
+                        <p class="text-secondary" data-i18n="notifIntro">勾选启用通知。每个通知可单独设置优先级（0-10）和封面推送。标题和内容均可自定义，留空则使用默认值。</p>
                         <div class="ncfg-toolbar">
-                            <div class="ncfg-hint">默认收起；改过标题或内容的会标记「已自定义」。展开后点变量标签可直接插入光标处。</div>
+                            <div class="ncfg-hint" data-i18n="toolbarHint">默认收起；改过标题或内容的会标记「已自定义」。展开后点变量标签可直接插入光标处。</div>
                             <button type="button" class="ncfg-btn" id="btnVarTable">
-                                <span id="btnVarTableText">变量对照表</span>
+                                <span id="btnVarTableText" data-i18n="btnVarTable">变量对照表</span>
                             </button>
                             <button type="button" class="ncfg-btn" id="btnToggleAll">
-                                <span id="btnToggleAllText">展开全部</span>
+                                <span id="btnToggleAllText" data-i18n="expandAll">展开全部</span>
                             </button>
                         </div>
                         <div class="ncfg-vartable" id="varTableWrap" style="display:none">
                             <div class="ncfg-var-row ncfg-var-head">
-                                <span class="ncfg-var-key">变量</span>
-                                <span class="ncfg-var-cn">含义</span>
-                                <span class="ncfg-var-note">说明</span>
-                                <span class="ncfg-var-use">适用通知</span>
+                                <span class="ncfg-var-key" data-i18n="colVar">变量</span>
+                                <span class="ncfg-var-cn" data-i18n="colMeaning">含义</span>
+                                <span class="ncfg-var-note" data-i18n="colNote">说明</span>
+                                <span class="ncfg-var-use" data-i18n="colApplies">适用通知</span>
                             </div>
                             <div id="varTableBody"></div>
                         </div>
@@ -395,7 +397,7 @@
                 </div>
 
                 <button id="saveConfig" is="emby-button" type="submit" class="raised button-submit block">
-                    <span>保存</span>
+                    <span data-i18n="save">保存</span>
                 </button>
             </div>
         </div>
@@ -407,39 +409,184 @@
 
                 // 每个通知支持哪些变量（写成数组，方便下面渲染 chips 和对照表；
                 // 顺序按使用频率排，{seriesName}/{mediaName} 在播放类里是同一个值）
+                // ⚠️ 每行顺序别动：label 后面必须紧跟 vars —— .workbuddy/check-plugin-vars.py
+                //    用正则 `label: "[^"]+", vars: [...]` 抓它来做一致性校验。
+                //    en 是英文界面下用的名字，只能放在 vars 之后。
                 var notificationDefs = [
-                    { key: "AuthenticationSuccess", label: "登录成功", vars: ["username"], cover: false },
-                    { key: "AuthenticationFailure", label: "登录失败", vars: ["username"], cover: false },
-                    { key: "PlaybackStart", label: "开始播放", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device", "client"], cover: true },
-                    { key: "PlaybackStop", label: "停止播放", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device", "completed"], cover: true },
-                    { key: "PlaybackProgress", label: "播放进度提醒", vars: ["progressPercent", "itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device"], cover: true },
-                    { key: "ItemAdded", label: "新增媒体", vars: ["mediaName", "mediaType", "path"], cover: true },
-                    { key: "ItemDeleted", label: "删除媒体", vars: ["mediaName", "mediaType", "path"], cover: false },
-                    { key: "SubtitleFailure", label: "字幕下载失败", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "provider", "reason"], cover: true }
+                    { key: "AuthenticationSuccess", label: "登录成功", vars: ["username"], en: "Sign-in success", cover: false },
+                    { key: "AuthenticationFailure", label: "登录失败", vars: ["username"], en: "Sign-in failure", cover: false },
+                    { key: "PlaybackStart", label: "开始播放", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device", "client"], en: "Playback started", cover: true },
+                    { key: "PlaybackStop", label: "停止播放", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device", "completed"], en: "Playback stopped", cover: true },
+                    { key: "PlaybackProgress", label: "播放进度提醒", vars: ["progressPercent", "itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device"], en: "Playback progress", cover: true },
+                    { key: "ItemAdded", label: "新增媒体", vars: ["mediaName", "mediaType", "path"], en: "Media added", cover: true },
+                    { key: "ItemDeleted", label: "删除媒体", vars: ["mediaName", "mediaType", "path"], en: "Media removed", cover: false },
+                    { key: "SubtitleFailure", label: "字幕下载失败", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "provider", "reason"], en: "Subtitle download failed", cover: true }
                 ];
 
                 // 变量中文对照表。说明是照着 Consumers.cs 里实际替换的值写的，不是望文生义：
                 //  · {seriesName} 和 {mediaName} 在播放类通知里替换的是同一个串
                 //  · {itemType} 是英文类名（Episode/Movie/...），{mediaType} 才是中文
                 //  · {seasonEpisode} 形如 S01E02，非剧集为空串
+                // ⚠️ 每行必须以 `{ cn:` 开头 —— check-plugin-vars.py 靠
+                //    `^\s+(\w+): \{ cn:` 抓字典的 key 来做覆盖校验，en/noteEn 只能放后面。
                 var VAR_DICT = {
-                    itemName: { cn: "媒体名称", note: "剧集=单集标题；电影=电影名" },
-                    seriesName: { cn: "所属剧集", note: "非剧集时等于「媒体名称」" },
-                    mediaName: { cn: "媒体名称", note: "播放类里与「所属剧集」同值；新增/删除通知里就是条目名" },
-                    seasonNumber: { cn: "季号", note: "纯数字，非剧集为 0" },
-                    episodeNumber: { cn: "集号", note: "纯数字，非剧集为 0" },
-                    seasonEpisode: { cn: "季集编号", note: "形如 S01E02；非剧集为空" },
-                    itemType: { cn: "媒体类型(英)", note: "英文类名：Episode / Movie / Series" },
-                    mediaType: { cn: "媒体类型(中)", note: "中文：电影 / 剧集 / 季 / 单集" },
-                    username: { cn: "用户名", note: "多人同时播放时以逗号连接" },
-                    device: { cn: "设备名", note: "如「客厅电视」" },
-                    client: { cn: "客户端", note: "如 Jellyfin Web / Infuse（仅「开始播放」有）" },
-                    progressPercent: { cn: "播放进度", note: "百分比数字，如 90（仅「播放进度」有）" },
-                    completed: { cn: "是否播完", note: "是 / 否（仅「停止播放」有）" },
-                    path: { cn: "文件路径", note: "服务器上的完整路径（媒体库通知）" },
-                    provider: { cn: "字幕源", note: "如 OpenSubtitles（仅「字幕下载失败」）" },
-                    reason: { cn: "失败原因", note: "超过 300 字会截断（仅「字幕下载失败」）" }
+                    itemName: { cn: "媒体名称", note: "剧集=单集标题；电影=电影名", en: "Item name", noteEn: "Episode title for series; movie title for films" },
+                    seriesName: { cn: "所属剧集", note: "非剧集时等于「媒体名称」", en: "Series", noteEn: "Equals the item name for non-series items" },
+                    mediaName: { cn: "媒体名称", note: "播放类里与「所属剧集」同值；新增/删除通知里就是条目名", en: "Media name", noteEn: "Same as series in playback notifications; the entry name in library notifications" },
+                    seasonNumber: { cn: "季号", note: "纯数字，非剧集为 0", en: "Season number", noteEn: "Plain number, 0 for non-series" },
+                    episodeNumber: { cn: "集号", note: "纯数字，非剧集为 0", en: "Episode number", noteEn: "Plain number, 0 for non-series" },
+                    seasonEpisode: { cn: "季集编号", note: "形如 S01E02；非剧集为空", en: "Season/episode", noteEn: "Like S01E02; empty for non-series" },
+                    itemType: { cn: "媒体类型(英)", note: "英文类名：Episode / Movie / Series", en: "Item type (EN)", noteEn: "English class name: Episode / Movie / Series" },
+                    mediaType: { cn: "媒体类型(中)", note: "中文：电影 / 剧集 / 季 / 单集", en: "Media type (CN)", noteEn: "Chinese: 电影 / 剧集 / 季 / 单集" },
+                    username: { cn: "用户名", note: "多人同时播放时以逗号连接", en: "Username", noteEn: "Comma-joined when several users play at once" },
+                    device: { cn: "设备名", note: "如「客厅电视」", en: "Device name", noteEn: 'e.g. "Living room TV"' },
+                    client: { cn: "客户端", note: "如 Jellyfin Web / Infuse（仅「开始播放」有）", en: "Client", noteEn: "e.g. Jellyfin Web / Infuse (playback start only)" },
+                    progressPercent: { cn: "播放进度", note: "百分比数字，如 90（仅「播放进度」有）", en: "Progress %", noteEn: "A number like 90 (playback progress only)" },
+                    completed: { cn: "是否播完", note: "是 / 否（仅「停止播放」有）", en: "Finished", noteEn: "Yes / No (playback stop only)" },
+                    path: { cn: "文件路径", note: "服务器上的完整路径（媒体库通知）", en: "File path", noteEn: "Full path on the server (library notifications)" },
+                    provider: { cn: "字幕源", note: "如 OpenSubtitles（仅「字幕下载失败」）", en: "Subtitle source", noteEn: "e.g. OpenSubtitles (subtitle failure only)" },
+                    reason: { cn: "失败原因", note: "超过 300 字会截断（仅「字幕下载失败」）", en: "Failure reason", noteEn: "Truncated past 300 characters (subtitle failure only)" }
                 };
+
+                // ============ 中英文案 ============
+                // 页面原本只有中文。做成两套，打开时按 Jellyfin 的界面语言挑一套：
+                //   · 静态部分：HTML 里标 data-i18n="key"，applyI18n() 统一填
+                //   · 动态部分（通知行、变量表）：直接用 t("key")
+                // 只做中英两种，取不到英文就回落中文 —— 宁可显示中文也不能空白。
+                var I18N = {
+                    zh: {
+                        pageTitle: "Chatz 推送设置", secTarget: "推送目标", secProgress: "播放进度推送",
+                        secNotifications: "通知类型与自定义模板",
+                        targetIntro: "Chatz 与 Gotify 可以同时开启，同一条通知会分别推送到两边。",
+                        pushToChatz: "推送到 Chatz", pushToGotify: "推送到 Gotify",
+                        chatzUrl: "Chatz 服务器地址:", chatzToken: "Chatz 应用 Token:",
+                        chatzUrlHint: "例如：http://192.168.1.10:20010（只填到域名/端口，不要带 /hook）",
+                        chatzTokenHint: "在 Chatz WebUI 创建「应用」后得到的应用 Token（不是全局 AUTH_TOKEN）",
+                        chatzChannelId: "Chatz 频道 ID（可选）", chatzChannelIdHint: "留空或 0 = 使用该应用自己的默认频道",
+                        chatzTags: "Chatz 标签（可选）:", chatzTagsHint: "逗号分隔，例如：jellyfin,播放 —— 供 Chatz 路由规则匹配",
+                        chatzAggHint: "Chatz 会把 5 分钟内「同应用 + 同频道 + 同标题」的消息聚合折叠成一条。若希望每条通知都独立显示，请在下方标题模板里带上变量（如 {itemName}）。",
+                        gotifyUrl: "Gotify 服务器地址:", gotifyUrlHint: "例如：https://mess.example.com",
+                        gotifyToken: "Gotify 应用 Token:", gotifyTokenHint: "在 Gotify 服务端创建应用后获得的 Token",
+                        jfUrl: "Jellyfin 外部访问地址:", jfUrlHint: "用于封面图片推送，例如：https://jellyfin.example.com",
+                        useMarkdown: "启用 Markdown 模式（让网页端也能显示封面图片）",
+                        useMarkdownHint: "开启后消息体使用 Markdown 格式，网页端和 App 内可显示内联封面图",
+                        progressEnable: "启用播放进度推送", progressAt: "达到", progressNotifyAt: "% 时推送通知",
+                        cooldown: "冷却时间", cooldownUnit: "分钟（同一集在冷却期内不重复推送）",
+                        progressHint: "每集首次达到设定百分比时推送一次。冷却时间过后（或播放下一集）会再次推送，不会漏通知。",
+                        skipStop: "已推送过进度的这一集，不再推送「停止播放」",
+                        skipStopHint: "追剧连播时每集都会先到阈值（进度通知）再播完（停止通知），去掉后者能省掉一半噪音。没到阈值就手动停止的，仍会照常推送。",
+                        notifIntro: "勾选启用通知。每个通知可单独设置优先级（0-10）和封面推送。标题和内容均可自定义，留空则使用默认值。",
+                        toolbarHint: "默认收起；改过标题或内容的会标记「已自定义」。展开后点变量标签可直接插入光标处。",
+                        btnVarTable: "变量对照表", btnVarTableHide: "收起对照表",
+                        expandAll: "展开全部", collapseAll: "收起全部",
+                        colVar: "变量", colMeaning: "含义", colNote: "说明", colApplies: "适用通知",
+                        save: "保存", tplToggle: "模板", tplCollapse: "收起", customized: "已自定义",
+                        priority: "优先级", priorityTip: "0-10，越大越优先", cover: "封面",
+                        labelTitle: "标题", labelBody: "内容",
+                        phTitle: "留空则使用默认标题（如：[Jellyfin] {name}）", phBody: "留空则使用默认内容模板",
+                        enablePrefix: "启用", loadFail: "加载配置失败"
+                    },
+                    en: {
+                        pageTitle: "Chatz Push Settings", secTarget: "Push Targets", secProgress: "Playback Progress",
+                        secNotifications: "Notification Types & Templates",
+                        targetIntro: "Chatz and Gotify can be enabled at the same time; each notification goes to both.",
+                        pushToChatz: "Push to Chatz", pushToGotify: "Push to Gotify",
+                        chatzUrl: "Chatz server URL:", chatzToken: "Chatz app token:",
+                        chatzUrlHint: "e.g. http://192.168.1.10:20010 — host and port only, no /hook",
+                        chatzTokenHint: "The app token you get after creating an app in Chatz WebUI (not the global AUTH_TOKEN)",
+                        chatzChannelId: "Chatz channel ID (optional)", chatzChannelIdHint: "Blank or 0 = the app's own default channel",
+                        chatzTags: "Chatz tags (optional):", chatzTagsHint: "Comma separated, e.g. jellyfin,playback — matched by Chatz routing rules",
+                        chatzAggHint: "Chatz folds messages from the same app, channel and title within 5 minutes into one. To keep every notification separate, put a variable (e.g. {itemName}) in the title template below.",
+                        gotifyUrl: "Gotify server URL:", gotifyUrlHint: "e.g. https://mess.example.com",
+                        gotifyToken: "Gotify app token:", gotifyTokenHint: "The token you get when creating an app in Gotify",
+                        jfUrl: "External Jellyfin URL:", jfUrlHint: "Used for cover images, e.g. https://jellyfin.example.com",
+                        useMarkdown: "Enable Markdown mode (so the web UI shows cover images too)",
+                        useMarkdownHint: "The message body becomes Markdown; cover images show inline in the web UI and app",
+                        progressEnable: "Enable playback progress notifications", progressAt: "Notify at", progressNotifyAt: "% played",
+                        cooldown: "Cooldown", cooldownUnit: "minutes (no repeat for the same episode while cooling down)",
+                        progressHint: "Sent once per episode when the threshold is reached. After the cooldown (or on the next episode) it fires again — nothing is missed.",
+                        skipStop: 'Skip the "playback stopped" notification for episodes that already sent progress',
+                        skipStopHint: "When binge-watching, each episode crosses the threshold (progress) and then finishes (stop) — dropping the latter halves the noise. Stopping manually before the threshold still notifies.",
+                        notifIntro: "Tick to enable. Each notification has its own priority (0-10) and cover toggle. Title and body are customizable; leave blank to use the defaults.",
+                        toolbarHint: 'Collapsed by default; rows with a custom title or body are marked "Customized". Click a variable chip to insert it at the cursor.',
+                        btnVarTable: "Variable Reference", btnVarTableHide: "Hide Reference",
+                        expandAll: "Expand All", collapseAll: "Collapse All",
+                        colVar: "Variable", colMeaning: "Meaning", colNote: "Notes", colApplies: "Used by",
+                        save: "Save", tplToggle: "Template", tplCollapse: "Collapse", customized: "Customized",
+                        priority: "Priority", priorityTip: "0-10, higher is more urgent", cover: "Cover",
+                        labelTitle: "Title", labelBody: "Body",
+                        phTitle: "Leave blank for the default title (e.g. [Jellyfin] {name})", phBody: "Leave blank for the default body template",
+                        enablePrefix: "Enable", loadFail: "Failed to load configuration"
+                    }
+                };
+
+                var LANG = "zh";
+
+                function t(key, vars) {
+                    var d = I18N[LANG] || I18N.zh;
+                    var s = (d[key] != null) ? d[key] : (I18N.zh[key] != null ? I18N.zh[key] : key);
+                    if (vars) {
+                        Object.keys(vars).forEach(function (k) { s = s.split("{" + k + "}").join(vars[k]); });
+                    }
+                    return s;
+                }
+
+                // 通知名：英文界面用 def.en，否则用中文 label
+                function defLabel(def) { return (LANG === "en" && def.en) ? def.en : def.label; }
+                // 变量字典：{cn,en} / {note,noteEn} 取当前语言那份
+                function varName(d) { return (LANG === "en" && d.en) ? d.en : d.cn; }
+                function varNote(d) { return (LANG === "en" && d.noteEn) ? d.noteEn : d.note; }
+
+                // 语言怎么定：Jellyfin 用户的界面语言优先，其次是 <html lang>，最后浏览器。
+                // ⚠️ 沙箱/老环境里 navigator、document.documentElement 都可能不存在，
+                //    全部做存在性判断，取不到就回落中文（宁可中文也不能白屏）。
+                function detectLang() {
+                    var c = "";
+                    try {
+                        var api = window.ApiClient;
+                        var u = (api && api.getCurrentUser) ? api.getCurrentUser() : null;
+                        if (u && u.Configuration && u.Configuration.UICulture) c = u.Configuration.UICulture;
+                    } catch (e) { /* 拿不到就看下面的 */ }
+                    if (!c) {
+                        var de = document.documentElement;
+                        if (de && de.lang) c = de.lang;
+                    }
+                    if (!c && typeof navigator !== "undefined" && navigator && navigator.language) c = navigator.language;
+                    return /^en\b/i.test(c) ? "en" : "zh";
+                }
+
+                // emby-input 的 label 属性在 Jellyfin 渲染后就变成 DOM 里的 <label> 了，
+                // 光 setAttribute 不会重画 —— 属性和已生成的 label 元素两处都改，
+                // 改不动也无所谓（保持中文，不影响功能）。
+                function setFieldLabel(el, text) {
+                    if (!el) return;
+                    el.setAttribute("label", text);
+                    var box = el.closest ? el.closest(".inputContainer") : el.parentNode;
+                    if (!box || !box.querySelectorAll) return;
+                    var labs = box.querySelectorAll(".inputLabel, label");
+                    for (var i = 0; i < labs.length; i++) {
+                        if (labs[i] !== el) labs[i].textContent = text;
+                    }
+                }
+
+                // 静态文案统一在这里填：data-i18n=文本、data-i18n-label=输入框标签、
+                // data-i18n-title=悬停提示、data-i18n-ph=占位符
+                function applyI18n() {
+                    view.querySelectorAll("[data-i18n]").forEach(function (el) {
+                        el.textContent = t(el.getAttribute("data-i18n"));
+                    });
+                    view.querySelectorAll("[data-i18n-label]").forEach(function (el) {
+                        setFieldLabel(el, t(el.getAttribute("data-i18n-label")));
+                    });
+                    view.querySelectorAll("[data-i18n-title]").forEach(function (el) {
+                        el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
+                    });
+                    view.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
+                        el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph")));
+                    });
+                    buildVarTable();
+                    refreshToggleAll();
+                }
 
                 var ARROW_RIGHT = "\u25B8";   // ▸
                 var ARROW_DOWN = "\u25BE";    // ▾
@@ -461,7 +608,7 @@
                     var btn = row.querySelector("[data-toggle]");
                     if (btn) {
                         btn.querySelector(".ncfg-arrow").textContent = open ? ARROW_DOWN : ARROW_RIGHT;
-                        btn.querySelector(".ncfg-toggle-text").textContent = open ? "收起" : "模板";
+                        btn.querySelector(".ncfg-toggle-text").textContent = open ? t("tplCollapse") : t("tplToggle");
                     }
                     var badge = row.querySelector(".ncfg-badge");
                     if (badge) badge.style.display = rowHasCustom(row) ? "" : "none";
@@ -488,11 +635,11 @@
                         var chip = document.createElement("button");
                         chip.type = "button";
                         chip.className = "ncfg-chip";
-                        chip.title = d ? d.note : "";
+                        chip.title = d ? varNote(d) : "";
                         var code = document.createElement("code");
                         code.textContent = "{" + name + "}";
                         var cn = document.createElement("span");
-                        cn.textContent = d ? d.cn : name;
+                        cn.textContent = d ? varName(d) : name;
                         chip.appendChild(code);
                         chip.appendChild(cn);
                         (function (n) {
@@ -521,7 +668,7 @@
                     var rows = view.querySelectorAll(".ncfg-tpl");
                     var allOpen = rows.length > 0;
                     rows.forEach(function (r) { if (!r.classList.contains("open")) allOpen = false; });
-                    btn.textContent = allOpen ? "收起全部" : "展开全部";
+                    btn.textContent = allOpen ? t("collapseAll") : t("expandAll");
                 }
 
                 view.querySelector("#btnToggleAll").addEventListener("click", function (e) {
@@ -540,25 +687,25 @@
                     Object.keys(VAR_DICT).forEach(function (name) {
                         var d = VAR_DICT[name];
                         var uses = [];
-                        notificationDefs.forEach(function (x) { if (x.vars.indexOf(name) !== -1) uses.push(x.label); });
+                        notificationDefs.forEach(function (x) { if (x.vars.indexOf(name) !== -1) uses.push(defLabel(x)); });
                         var rowEl = document.createElement("div");
                         rowEl.className = "ncfg-var-row";
                         var k = document.createElement("span"); k.className = "ncfg-var-key"; k.textContent = "{" + name + "}";
-                        var c = document.createElement("span"); c.className = "ncfg-var-cn"; c.textContent = d.cn;
-                        var n = document.createElement("span"); n.className = "ncfg-var-note"; n.textContent = d.note;
+                        var c = document.createElement("span"); c.className = "ncfg-var-cn"; c.textContent = varName(d);
+                        var n = document.createElement("span"); n.className = "ncfg-var-note"; n.textContent = varNote(d);
                         var u = document.createElement("span"); u.className = "ncfg-var-use"; u.textContent = uses.join(" · ");
                         rowEl.appendChild(k); rowEl.appendChild(c); rowEl.appendChild(n); rowEl.appendChild(u);
                         box.appendChild(rowEl);
                     });
                 }
-                buildVarTable();
+                // 变量表不在这里建 —— 它依赖当前语言，放到 applyI18n() 里
 
                 view.querySelector("#btnVarTable").addEventListener("click", function (e) {
                     e.preventDefault();
                     var wrap = view.querySelector("#varTableWrap");
                     var show = wrap.style.display === "none";
                     wrap.style.display = show ? "" : "none";
-                    view.querySelector("#btnVarTableText").textContent = show ? "收起对照表" : "变量对照表";
+                    view.querySelector("#btnVarTableText").textContent = show ? t("btnVarTableHide") : t("btnVarTable");
                 });
 
                 function buildRow(def, opts) {
@@ -569,17 +716,19 @@
                     // 头部：只放常量，用 innerHTML 拼是安全的（不含任何配置值）
                     var head = document.createElement("div");
                     head.className = "ncfg-tpl-head";
+                    // 英文下 "Enable" 和名字之间要留空格，中文不用
+                    var ariaEnable = t("enablePrefix") + (LANG === "en" ? " " : "") + defLabel(def);
                     head.innerHTML =
-                        '<input type="checkbox" class="ncfg-check" data-notification="' + def.key + '" id="cb_' + def.key + '" aria-label="启用' + def.label + '"' + (opts.checked ? ' checked' : '') + ' />' +
-                        '<span class="ncfg-tpl-name">' + def.label + '</span>' +
-                        '<span class="ncfg-badge" style="display:none">已自定义</span>' +
-                        '<span class="ncfg-pri-wrap"><span class="ncfg-mini-label">优先级</span>' +
-                        '<input type="number" class="ncfg-field ncfg-num" data-priority="' + def.key + '" id="pri_' + def.key + '" min="0" max="10" value="' + opts.priority + '" title="0-10，越大越优先" /></span>' +
+                        '<input type="checkbox" class="ncfg-check" data-notification="' + def.key + '" id="cb_' + def.key + '" aria-label="' + ariaEnable + '"' + (opts.checked ? ' checked' : '') + ' />' +
+                        '<span class="ncfg-tpl-name">' + defLabel(def) + '</span>' +
+                        '<span class="ncfg-badge" style="display:none">' + t("customized") + '</span>' +
+                        '<span class="ncfg-pri-wrap"><span class="ncfg-mini-label">' + t("priority") + '</span>' +
+                        '<input type="number" class="ncfg-field ncfg-num" data-priority="' + def.key + '" id="pri_' + def.key + '" min="0" max="10" value="' + opts.priority + '" title="' + t("priorityTip") + '" /></span>' +
                         (def.cover
-                            ? '<label class="ncfg-cover"><input type="checkbox" data-cover="' + def.key + '" id="cover_' + def.key + '"' + (opts.coverEnabled ? ' checked' : '') + ' />封面</label>'
+                            ? '<label class="ncfg-cover"><input type="checkbox" data-cover="' + def.key + '" id="cover_' + def.key + '"' + (opts.coverEnabled ? ' checked' : '') + ' />' + t("cover") + '</label>'
                             : '') +
                         '<button type="button" class="ncfg-btn" data-toggle="' + def.key + '">' +
-                        '<span class="ncfg-arrow">' + ARROW_RIGHT + '</span><span class="ncfg-toggle-text">模板</span></button>';
+                        '<span class="ncfg-arrow">' + ARROW_RIGHT + '</span><span class="ncfg-toggle-text">' + t("tplToggle") + '</span></button>';
                     row.appendChild(head);
 
                     // 主体：输入框的 value 一律用属性赋值，不拼进 HTML（避免引号/尖括号破坏结构）
@@ -588,28 +737,28 @@
 
                     var titleLabel = document.createElement("div");
                     titleLabel.className = "ncfg-label";
-                    titleLabel.textContent = "标题";
+                    titleLabel.textContent = t("labelTitle");
                     body.appendChild(titleLabel);
 
                     var titleInput = document.createElement("input");
                     titleInput.type = "text";
                     titleInput.className = "ncfg-field";
                     titleInput.setAttribute("data-title-template", def.key);
-                    titleInput.placeholder = "留空则使用默认标题（如：[Jellyfin] " + def.label + "）";
+                    titleInput.placeholder = t("phTitle", { name: defLabel(def) });
                     titleInput.value = opts.titleValue;
                     body.appendChild(titleInput);
                     body.appendChild(buildVarChips(def.vars, titleInput));
 
                     var bodyLabel = document.createElement("div");
                     bodyLabel.className = "ncfg-label";
-                    bodyLabel.textContent = "内容";
+                    bodyLabel.textContent = t("labelBody");
                     body.appendChild(bodyLabel);
 
                     var ta = document.createElement("textarea");
                     ta.className = "ncfg-field ncfg-area";
                     ta.setAttribute("data-template", def.key);
                     ta.setAttribute("rows", "4");
-                    ta.placeholder = "留空则使用默认内容模板";
+                    ta.placeholder = t("phBody");
                     ta.value = opts.bodyValue;
                     body.appendChild(ta);
                     body.appendChild(buildVarChips(def.vars, ta));
@@ -643,6 +792,9 @@
 
                 view.addEventListener("viewshow", function () {
                     waitForApiClient(function (api) {
+                        // 语言要在渲染之前定下来：通知行、变量表都是按当前语言生成的
+                        LANG = detectLang();
+                        applyI18n();
                         Dashboard.showLoadingMsg();
                         api.getPluginConfiguration(pluginId).then(function (config) {
                             view.querySelector("#txtGotifyUrl").value = config.GotifyUrl || "";
@@ -702,7 +854,7 @@
                             }
                             refreshToggleAll();
                             Dashboard.hideLoadingMsg();
-                        }).catch(function () { Dashboard.hideLoadingMsg(); alert("加载配置失败"); });
+                        }).catch(function () { Dashboard.hideLoadingMsg(); alert(t("loadFail")); });
                     });
                 });
 
