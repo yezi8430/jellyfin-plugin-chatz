@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Jellyfin 12.x 的包只支持 net10.0（12.0 起跟着 monorepo 升到 .NET 10），
+         所以插件必须一起升；留在 net9.0 会直接还原失败（NU1202） -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Jellyfin.Plugin.HelloWorld</RootNamespace>
+    <AssemblyName>HelloWorldPlugin</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <!-- ⚠️ 许可证：插件引用 Jellyfin 的 GPL 包，只能是 GPL，
+         不能跟服务端/客户端（MIT）混用。改这个之前先看 LICENSE。 -->
+    <PackageLicenseExpression>GPL-2.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/yezi8430/jellyfin-plugin-chatz</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yezi8430/jellyfin-plugin-chatz</RepositoryUrl>
+    <Description>把 Jellyfin 的登录、播放、媒体库变动、字幕下载失败等事件推送到 Gotify 或 Chatz</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 用 Jellyfin.Common 提供的 DI 类型，不要单独引 Microsoft.Extensions.DependencyInjection -->
+    <PackageReference Include="Jellyfin.Common" Version="12.1.0" />
+    <PackageReference Include="Jellyfin.Controller" Version="12.1.0" />
+    <PackageReference Include="Jellyfin.Model" Version="12.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+</Project>

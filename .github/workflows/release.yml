@@ -1,0 +1,96 @@
+name: Build & Release
+
+# 打 tag 就发版：git tag v1.0.0 && git push origin v1.0.0
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write      # 发布 Release + 把更新后的 manifest.json 提交回主分支
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # 仓库里的 NuGet.Config 配的是国内源，在海外 runner 上反而慢；
+      # 这里删掉它，直接用 runner 自带的 nuget.org
+      #
+      # 版本号从 tag 推导（v1.0.0 -> 1.0.0.0），用 -p:Version 覆盖 csproj 里的默认值，
+      # 这样 dll 自身记录的版本和 Release 的版本才是一致的。
+      - name: 还原并编译
+        run: |
+          rm -f NuGet.Config
+          TAG="${GITHUB_REF_NAME}"
+          VER="${TAG#v}"
+          case "$VER" in
+            *.*.*.*) ASM="$VER" ;;
+            *.*.*)   ASM="${VER}.0" ;;
+            *.*)     ASM="${VER}.0.0" ;;
+            *)       ASM="${VER}.0.0.0" ;;
+          esac
+          dotnet build -c Release --tl:off \
+            -p:Version="$ASM" -p:AssemblyVersion="$ASM" -p:FileVersion="$ASM"
+
+      # 版本号从 tag 推导：v1.0.0 -> 1.0.0.0（Jellyfin 要求 4 段）
+      - name: 推导版本号并打包
+        id: pack
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VER="${TAG#v}"
+          case "$VER" in
+            *.*.*.*) ASM="$VER" ;;
+            *.*.*)   ASM="${VER}.0" ;;
+            *.*)     ASM="${VER}.0.0" ;;
+            *)       ASM="${VER}.0.0.0" ;;
+          esac
+          ZIP="GotifyChatzPush-${ASM}.zip"
+          # -j：zip 里直接放 dll，不要带 bin/Release/... 的目录层级
+          # （Jellyfin 解压后要能在根目录找到 dll）
+          zip -j "$ZIP" bin/Release/net10.0/HelloWorldPlugin.dll
+          echo "tag=$TAG"      >> "$GITHUB_OUTPUT"
+          echo "version=$ASM"  >> "$GITHUB_OUTPUT"
+          echo "zip=$ZIP"      >> "$GITHUB_OUTPUT"
+
+      # checksum 必须在这里算 —— 它是 zip 的 MD5，Jellyfin 下载时会校验
+      - name: 更新 manifest.json
+        run: |
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ steps.pack.outputs.tag }}/${{ steps.pack.outputs.zip }}"
+          python3 .github/scripts/update_manifest.py \
+            "${{ steps.pack.outputs.zip }}" \
+            "${{ steps.pack.outputs.version }}" \
+            "$URL" \
+            "发布 ${{ steps.pack.outputs.version }}"
+
+      - name: 发布 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.pack.outputs.zip }}
+            manifest.json
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # manifest.json 要让别人的 Jellyfin 能读到（插件源指向 raw.githubusercontent），
+      # 所以必须提交回主分支。tag push 时是 detached HEAD，push 要显式写目标分支。
+      - name: 提交 manifest.json 回主分支
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          if git diff --cached --quiet; then
+            echo "manifest.json 没有变化，跳过提交"
+          else
+            git commit -m "chore: 更新 manifest.json (${{ steps.pack.outputs.version }})"
+            git push origin "HEAD:refs/heads/${MAIN_BRANCH}"
+          fi
+        env:
+          MAIN_BRANCH: main

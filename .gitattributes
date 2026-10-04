@@ -1,0 +1,15 @@
+# 统一换行符：仓库里一律存 LF。
+# 特别是 build.sh —— 它是给 Linux/NAS 上跑的，万一检出生 CRLF 会报
+# "bash: $'\r': command not found"，所以显式锁成 LF。
+* text=auto
+
+*.sh  text eol=lf
+*.py  text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# 二进制/产物不要做换行符转换
+*.dll binary
+*.zip binary
+*.png binary
+*.jpg binary

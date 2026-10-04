@@ -1,0 +1,17 @@
+# ---------- 编译产物 ----------
+bin/
+obj/
+*.dll
+*.zip
+
+# ---------- IDE / 编辑器 ----------
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+
+# ---------- 系统 ----------
+.DS_Store
+Thumbs.db
