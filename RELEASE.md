@@ -3,6 +3,34 @@
 每次改完插件要让它出现在用户的 Jellyfin 里，一共 5 步。
 **顺序不能乱** —— manifest 的 checksum 是 zip 的 MD5，必须等 Release 出来之后才能算。
 
+### 速查（复制即用，把 1.0.3 换成新版本号）
+
+```bash
+# ① 提交代码（没改代码就跳过）
+git add -A
+git commit -m "说明"
+git pull --rebase origin main && git push origin main
+
+# ② 打 tag，触发 CI 编译 + 发 Release
+git tag v1.0.3
+git push origin v1.0.3
+
+# ③ ⏸ 等 1–3 分钟，确认 Release 已发布（这步不能跳，
+#    跳过去第 ④ 步会 404 —— 因为 zip 还没生成，MD5 也就无从算起）
+curl -sIL -o /dev/null -w "%{http_code}\n" \
+  https://github.com/yezi8430/jellyfin-plugin-chatz/releases/download/v1.0.3/Chatz-1.0.3.0.zip
+# 期望 200；404 就再等等
+
+# ④ 更新 manifest.json
+python tools/bump-manifest.py v1.0.3
+git add manifest.json
+git commit -m "chore: 更新 manifest.json (1.0.3.0)"
+git push
+```
+
+⑤ 是 NAS 那边：Jellyfin 刷新插件源 → 安装 → 重启 → 确认只有一个 dll。见下面第 5 节。
+
+
 ---
 
 ## 1. 改代码，本地自检
