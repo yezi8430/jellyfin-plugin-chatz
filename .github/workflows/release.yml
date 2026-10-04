@@ -90,6 +90,12 @@ jobs:
             echo "manifest.json 没有变化，跳过提交"
           else
             git commit -m "chore: 更新 manifest.json (${{ steps.pack.outputs.version }})"
+            # ⚠️ CI checkout 的是 tag，而 main 上可能已经有别的提交
+            #    （最典型的就是上次发版时 CI 自己推回来的 manifest 更新）
+            #    ⇒ 不先 rebase，push 会被 non-fast-forward 拒绝，
+            #      结果就是 Release 发了、manifest 没更新，用户看不到新版本。
+            git fetch origin "${MAIN_BRANCH}"
+            git rebase "origin/${MAIN_BRANCH}" || git rebase --abort
             git push origin "HEAD:refs/heads/${MAIN_BRANCH}"
           fi
         env:
