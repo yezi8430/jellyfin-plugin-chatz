@@ -17,8 +17,14 @@
 
 用法（仓库根目录跑）：
   python tools/bump-manifest.py v1.0.2
-  python tools/bump-manifest.py v1.0.2 --keep-old      # 保留旧版本条目
-  python tools/bump-manifest.py v1.0.2 -m "修复 xxx"    # 自定义更新日志
+  python tools/bump-manifest.py v1.0.2 -m "修复 xxx"   # 自定义更新日志
+  python tools/bump-manifest.py v1.0.2 --drop-old      # 只留本次这个版本
+
+默认**保留历史版本**，Jellyfin 里就能看到一列版本可以选/回退。
+⚠️ 唯一要清旧版的情况是 dll 改过名（比如 HelloWorldPlugin.dll -> Chatz.dll）：
+   旧版 zip 里的 dll 名和新版不同，两个 dll 会被同时加载 => 重复推送。
+   脚本检测到旧版本的 zip 名前缀和当前 AssemblyName 不一致时会警告，
+   那种情况下请手动删掉旧条目（或加 --drop-old）。
 
 它会自动：
   · 从 tag 推导 4 段版本号（v1.0.2 -> 1.0.2.0，Jellyfin 要求 4 段）
@@ -104,8 +110,8 @@ def main():
     ap = argparse.ArgumentParser(description='把某个 Release 版本写进 manifest.json')
     ap.add_argument('tag', help='Release 的 tag，如 v1.0.2')
     ap.add_argument('-m', '--message', default=None, help='更新日志（默认“发布 <版本>”）')
-    ap.add_argument('--keep-old', action='store_true',
-                    help='保留旧版本条目（默认只留最新版，见下方说明）')
+    ap.add_argument('--drop-old', action='store_true',
+                    help='只保留本次写入的版本（默认保留所有历史版本）')
     args = ap.parse_args()
 
     version = asm_from_tag(args.tag)
@@ -135,17 +141,35 @@ def main():
     sys.argv = ['update_manifest.py', tmp, version, url, changelog]
     updater.main()
 
-    if not args.keep_old:
-        # 只保留最新版：旧版本的 zip 里可能是改名前的 HelloWorldPlugin.dll，
-        # 用户从 Jellyfin 装了旧版再装新版，两个 dll 会被同时加载 => 重复推送。
-        manifest = json.load(io.open('manifest.json', encoding='utf-8'))
+    manifest = json.load(io.open('manifest.json', encoding='utf-8'))
+
+    # dll 改名检测：旧版 zip 里的 dll 名和新版不同 ⇒ 两个 dll 会被同时加载
+    prefix = assembly_name() + '-'
+    renamed = []
+    for v in manifest[0]['versions']:
+        if v.get('version') == version:
+            continue
+        fn = os.path.basename(v.get('sourceUrl', '') or '')
+        if not fn.startswith(prefix):
+            renamed.append('%s（%s）' % (v.get('version'), fn or '?'))
+
+    if args.drop_old:
         before = len(manifest[0]['versions'])
         manifest[0]['versions'] = [
             v for v in manifest[0]['versions'] if v.get('version') == version]
         with io.open('manifest.json', 'w', encoding='utf-8', newline='\n') as f:
             json.dump(manifest, f, ensure_ascii=False, indent=2)
             f.write('\n')
-        print('已清理旧版本条目（%d 条 -> 1 条），如需保留请加 --keep-old' % before)
+        print('已清理旧版本条目（%d 条 -> 1 条）' % before)
+    else:
+        print('manifest 现有版本: %s' % ', '.join(
+            v.get('version') for v in manifest[0]['versions']))
+
+    if renamed:
+        print('')
+        print('⚠️ 这些旧版本的 zip 名不是 %s-*：%s' % (assembly_name(), '、'.join(renamed)))
+        print('   说明 dll 改过名，装它们会和 %s.dll 并存 => 重复推送。' % assembly_name())
+        print('   建议手动删掉这些条目，或加 --drop-old 只留最新版。')
 
     print('\n下一步：')
     print('  git add manifest.json')
