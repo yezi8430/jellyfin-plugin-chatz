@@ -127,7 +127,8 @@ git push
 > The `checksum` in `manifest.json` is the **MD5 of the packaged zip**, so it can only be computed after the zip exists — hand-writing it will never match (Jellyfin verifies on download).
 > `bump-manifest.py` downloads the Release zip, computes the MD5, checks the archive really contains just `Chatz.dll` at the root, then writes the manifest.
 >
-> The full step-by-step checklist lives in **[RELEASE.md](RELEASE.md)** (maintainer notes, in Chinese).
+> The full step-by-step checklist lives in **[RELEASE.en.md](RELEASE.en.md)**
+> ([RELEASE.md](RELEASE.md) in Chinese).
 
 ## Layout
 
@@ -141,7 +142,7 @@ git push
 ├── images/logo.png                  # Plugin cover (Jellyfin catalog card + top of this page)
 ├── manifest.json                    # Repository manifest (updated by bump-manifest.py after release)
 ├── tools/bump-manifest.py           # Writes the local manifest entry after a release
-├── RELEASE.md                       # Release / update procedure and known pitfalls
+├── RELEASE.md / RELEASE.en.md        # Release / update procedure and known pitfalls
 └── .github/workflows/release.yml    # Auto-publish on tag
 ```
 
