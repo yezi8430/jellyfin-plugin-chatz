@@ -418,8 +418,8 @@
                     { key: "PlaybackStart", label: "开始播放", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device", "client"], en: "Playback started", cover: true },
                     { key: "PlaybackStop", label: "停止播放", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device", "completed"], en: "Playback stopped", cover: true },
                     { key: "PlaybackProgress", label: "播放进度提醒", vars: ["progressPercent", "itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "username", "device"], en: "Playback progress", cover: true },
-                    { key: "ItemAdded", label: "新增媒体", vars: ["mediaName", "mediaType", "path"], en: "Media added", cover: true },
-                    { key: "ItemDeleted", label: "删除媒体", vars: ["mediaName", "mediaType", "path"], en: "Media removed", cover: false },
+                    { key: "ItemAdded", label: "新增媒体", vars: ["workName", "mediaName", "mediaType", "path"], en: "Media added", cover: true },
+                    { key: "ItemDeleted", label: "删除媒体", vars: ["workName", "mediaName", "mediaType", "path"], en: "Media removed", cover: false },
                     { key: "SubtitleFailure", label: "字幕下载失败", vars: ["itemName", "seriesName", "mediaName", "seasonNumber", "episodeNumber", "seasonEpisode", "itemType", "provider", "reason"], en: "Subtitle download failed", cover: true }
                 ];
 
@@ -431,6 +431,7 @@
                 //    `^\s+(\w+): \{ cn:` 抓字典的 key 来做覆盖校验，en/noteEn 只能放后面。
                 var VAR_DICT = {
                     itemName: { cn: "媒体名称", note: "剧集=单集标题；电影=电影名", en: "Item name", noteEn: "Episode title for series; movie title for films" },
+                    workName: { cn: "作品名", note: "剧集通知里是剧名（单集/季都归到剧）；电影=电影名。标题带它，Chatz 才会按作品分组折叠", en: "Work name", noteEn: "Series title for episodes/seasons; movie title for films. Keep it in the title so Chatz folds by work" },
                     seriesName: { cn: "所属剧集", note: "非剧集时等于「媒体名称」", en: "Series", noteEn: "Equals the item name for non-series items" },
                     mediaName: { cn: "媒体名称", note: "播放类里与「所属剧集」同值；新增/删除通知里就是条目名", en: "Media name", noteEn: "Same as series in playback notifications; the entry name in library notifications" },
                     seasonNumber: { cn: "季号", note: "纯数字，非剧集为 0", en: "Season number", noteEn: "Plain number, 0 for non-series" },
@@ -464,7 +465,7 @@
                         chatzTokenHint: "在 Chatz WebUI 创建「应用」后得到的应用 Token（不是全局 AUTH_TOKEN）",
                         chatzChannelId: "Chatz 频道 ID（可选）", chatzChannelIdHint: "留空或 0 = 使用该应用自己的默认频道",
                         chatzTags: "Chatz 标签（可选）:", chatzTagsHint: "逗号分隔，例如：jellyfin,播放 —— 供 Chatz 路由规则匹配",
-                        chatzAggHint: "Chatz 会把 5 分钟内「同应用 + 同频道 + 同标题」的消息聚合折叠成一条。若希望每条通知都独立显示，请在下方标题模板里带上变量（如 {itemName}）。",
+                        chatzAggHint: "Chatz 会把 5 分钟内「同应用 + 同频道 + 同标题」的消息聚合折叠成一条。默认标题带 {workName}/{seriesName}，折叠即按作品分组（同剧新增 N 集折成一条，主卡「打开」按钮直达该剧）。想每条都独立，就在标题里加 {mediaName} 这类更细的变量。",
                         gotifyUrl: "Gotify 服务器地址:", gotifyUrlHint: "例如：https://mess.example.com",
                         gotifyToken: "Gotify 应用 Token:", gotifyTokenHint: "在 Gotify 服务端创建应用后获得的 Token",
                         jfUrl: "Jellyfin 外部访问地址:", jfUrlHint: "用于封面图片推送，例如：https://jellyfin.example.com",
@@ -496,7 +497,7 @@
                         chatzTokenHint: "The app token you get after creating an app in Chatz WebUI (not the global AUTH_TOKEN)",
                         chatzChannelId: "Chatz channel ID (optional)", chatzChannelIdHint: "Blank or 0 = the app's own default channel",
                         chatzTags: "Chatz tags (optional):", chatzTagsHint: "Comma separated, e.g. jellyfin,playback — matched by Chatz routing rules",
-                        chatzAggHint: "Chatz folds messages from the same app, channel and title within 5 minutes into one. To keep every notification separate, put a variable (e.g. {itemName}) in the title template below.",
+                        chatzAggHint: "Chatz folds messages from the same app, channel and title within 5 minutes into one. The default titles include {workName}/{seriesName}, so folding groups by work (a season drop becomes one card whose \"Open\" button goes straight to that series). Add a finer variable like {mediaName} to keep every notification separate.",
                         gotifyUrl: "Gotify server URL:", gotifyUrlHint: "e.g. https://mess.example.com",
                         gotifyToken: "Gotify app token:", gotifyTokenHint: "The token you get when creating an app in Gotify",
                         jfUrl: "External Jellyfin URL:", jfUrlHint: "Used for cover images, e.g. https://jellyfin.example.com",

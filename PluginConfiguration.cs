@@ -107,13 +107,18 @@ namespace Jellyfin.Plugin.Chatz
 
         public static Dictionary<string, string> DefaultTitles => new()
         {
+            // 标题带作品名（{workName}/{seriesName}）是有意为之，不只是好看：
+            // Chatz 服务端按「同频道+同应用+同标题」折叠消息，标题一旦带上作品名，
+            // 聚合就变成**按作品分组** —— 同一部剧一次新增 N 集折成一条（主卡的深链
+            // extras.url 指向该剧，永远正确）；不同剧/不同电影各自成条。
+            // 固定标题（旧默认）会把互不相关的条目折进一条，主卡深链就会指向错误条目。
             ["AuthenticationSuccess"] = "[Jellyfin] 登录成功",
             ["AuthenticationFailure"] = "[Jellyfin] 登录失败",
-            ["PlaybackStart"] = "[Jellyfin] 开始播放",
-            ["PlaybackStop"] = "[Jellyfin] 停止播放",
-            ["PlaybackProgress"] = "[Jellyfin] 播放进度提醒",
-            ["ItemAdded"] = "[Jellyfin] 新增媒体",
-            ["ItemDeleted"] = "[Jellyfin] 删除媒体",
+            ["PlaybackStart"] = "[Jellyfin] 开始播放 · {seriesName}",
+            ["PlaybackStop"] = "[Jellyfin] 停止播放 · {seriesName}",
+            ["PlaybackProgress"] = "[Jellyfin] 播放进度提醒 · {seriesName}",
+            ["ItemAdded"] = "[Jellyfin] 新增媒体 · {workName}",
+            ["ItemDeleted"] = "[Jellyfin] 删除媒体 · {workName}",
             ["SubtitleFailure"] = "[Jellyfin] 字幕下载失败"
         };
     }

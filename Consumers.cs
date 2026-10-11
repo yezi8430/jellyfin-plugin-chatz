@@ -88,8 +88,9 @@ namespace Jellyfin.Plugin.Chatz
                 .Replace("{username}", usernames).Replace("{device}", device).Replace("{client}", client);
 
             var imageUrl = config.IsCoverEnabled("PlaybackStart") ? Notifier.GetCoverUrl(eventArgs.Item, config) : null;
+            var openUrl = Notifier.GetDetailsUrl(eventArgs.Item.Id, config);
             PlaybackProgressHandler.RecordPlaybackStart(eventArgs.Item.Id);
-            await Notifier.SendAsync(title, message, config, config.GetPriority("PlaybackStart"), imageUrl);
+            await Notifier.SendAsync(title, message, config, config.GetPriority("PlaybackStart"), imageUrl, null, openUrl);
         }
     }
 
@@ -143,8 +144,9 @@ namespace Jellyfin.Plugin.Chatz
             }
 
             var imageUrl = config.IsCoverEnabled("PlaybackStop") ? Notifier.GetCoverUrl(eventArgs.Item, config) : null;
+            var openUrl = Notifier.GetDetailsUrl(eventArgs.Item.Id, config);
             PlaybackProgressHandler.ClearPlaybackStart(eventArgs.Item.Id);
-            await Notifier.SendAsync(title, message, config, config.GetPriority("PlaybackStop"), imageUrl);
+            await Notifier.SendAsync(title, message, config, config.GetPriority("PlaybackStop"), imageUrl, null, openUrl);
         }
     }
 
@@ -272,7 +274,8 @@ namespace Jellyfin.Plugin.Chatz
                 .Replace("{username}", usernames).Replace("{device}", device);
 
             var imageUrl = config.IsCoverEnabled("PlaybackProgress") ? Notifier.GetCoverUrl(eventArgs.Item, config) : null;
-            await Notifier.SendAsync(title, message, config, config.GetPriority("PlaybackProgress"), imageUrl);
+            var openUrl = Notifier.GetDetailsUrl(eventArgs.Item.Id, config);
+            await Notifier.SendAsync(title, message, config, config.GetPriority("PlaybackProgress"), imageUrl, null, openUrl);
         }
     }
 
@@ -287,7 +290,9 @@ namespace Jellyfin.Plugin.Chatz
     //     · Android MessageCard.kt: AggregateChildItem → MessageText.imageUrlFromExtras(child.extras)
     //
     //   所以逐条发出去效果反而**更好**：每一条都带自己的封面 / 路径 / 类型，
-    //   界面上仍然是一条可展开的卡片（标题不带变量的默认模板就会折叠）。
+    //   界面上仍然是一条可展开的卡片（默认标题带 {workName}/{seriesName}，所以折叠
+    //   是**按作品分组**的 —— 同一部剧一次新增 N 集折成一条，不同作品各自成条；
+    //   这同时保证了折叠主卡的 extras.url 深链永远指向正确作品）。
     //   插件自己再汇总一遍，只会把封面、{path}、{mediaType} 这三样信息压扁成一条。
     //
     // ⚠️ 代价是必须自己控速：Chatz 的 webhook 入口按 token 分桶限流 **60 次/分钟**
@@ -313,8 +318,15 @@ namespace Jellyfin.Plugin.Chatz
         /// <summary>
         /// 入队时就把要用的字段摘出来，**不持有 BaseItem 引用** ——
         /// 一次扫描可能上万条，长期持有 BaseItem 很占内存。
+        ///
+        /// ItemId / WorkName 是给「深链」用的：
+        ///   · ItemId  → extras.url 跳详情页，必须用**条目自己**的 Id
+        ///     （剧集封面取 SeriesId，但「新增了第 3 集」要跳到第 3 集，不是剧集页）
+        ///   · WorkName → 标题模板的 {workName}：Episode/Season 用所属剧名，
+        ///     电影/剧集用条目名。标题带作品名 ⇒ Chatz 的折叠变成按作品分组，
+        ///     主卡的 extras.url（来自第一条）就永远指向正确的作品。
         /// </summary>
-        private readonly record struct MediaEvent(Guid CoverId, string Name, string TypeName, string Path, bool Added);
+        private readonly record struct MediaEvent(Guid CoverId, Guid ItemId, string WorkName, string Name, string TypeName, string Path, bool Added);
 
         public MediaLibraryNotifier(ILibraryManager libraryManager)
         {
@@ -388,8 +400,17 @@ namespace Jellyfin.Plugin.Chatz
             // Episode 用所属剧集的海报（和播放通知的取图规则保持一致）
             var coverId = (item is Episode ep && ep.SeriesId != Guid.Empty) ? ep.SeriesId : item.Id;
 
+            // 标题用的「作品名」：单集/季归到所属剧，电影/剧集就是自己 ——
+            // 这样同一部作品的条目才会被 Chatz 折叠到一起（按作品分组）
+            string workName;
+            if (item is Episode ep2 && !string.IsNullOrEmpty(ep2.SeriesName)) workName = ep2.SeriesName;
+            else if (item is Season season && !string.IsNullOrEmpty(season.SeriesName)) workName = season.SeriesName;
+            else workName = item.Name ?? "未知媒体";
+
             _queue.Enqueue(new MediaEvent(
                 coverId,
+                item.Id,
+                workName,
                 item.Name ?? "未知媒体",
                 MediaTypeName(item),
                 item.Path ?? string.Empty,
@@ -432,11 +453,13 @@ namespace Jellyfin.Plugin.Chatz
             if (!config.NotificationTypes.Contains(key)) return;
 
             var title = config.GetTitleTemplate(key)
+                .Replace("{workName}", ev.WorkName)
                 .Replace("{mediaName}", ev.Name)
                 .Replace("{mediaType}", ev.TypeName)
                 .Replace("{path}", ev.Path);
 
             var message = config.GetTemplate(key)
+                .Replace("{workName}", ev.WorkName)
                 .Replace("{mediaName}", ev.Name)
                 .Replace("{mediaType}", ev.TypeName)
                 .Replace("{path}", ev.Path);
@@ -445,6 +468,9 @@ namespace Jellyfin.Plugin.Chatz
             //    ⇒ 删除通知一律不带封面，免得正文里挂一个破图。
             var imageUrl = (ev.Added && config.IsCoverEnabled(key)) ? Notifier.GetCoverUrl(ev.CoverId, config) : null;
 
+            // ⚠️ 深链同理：删除的条目详情页必然 404 ⇒ 删除通知不带 url。
+            var openUrl = ev.Added ? Notifier.GetDetailsUrl(ev.ItemId, config) : null;
+
             // 自动带上语义标签，方便在 Chatz 里用路由规则做静默 / 分流 / 转发
             var tags = ev.Added
                 ? new[] { "新增媒体", ev.TypeName }
@@ -452,7 +478,7 @@ namespace Jellyfin.Plugin.Chatz
 
             Console.WriteLine($"[Notify][Debug] 媒体库{(ev.Added ? "新增" : "删除")}投递: {ev.Name} [{ev.TypeName}]");
 
-            await Notifier.SendAsync(title, message, config, config.GetPriority(key), imageUrl, tags);
+            await Notifier.SendAsync(title, message, config, config.GetPriority(key), imageUrl, tags, openUrl);
         }
     }
 
@@ -511,7 +537,9 @@ namespace Jellyfin.Plugin.Chatz
                 .Replace("{provider}", provider).Replace("{reason}", reason);
 
             var imageUrl = config.IsCoverEnabled("SubtitleFailure") ? Notifier.GetCoverUrl(eventArgs.Item, config) : null;
-            await Notifier.SendAsync(title, message, config, config.GetPriority("SubtitleFailure"), imageUrl);
+            // 字幕失败深链到条目详情页：下一步动作很明确 —— 去那部片子的页面手动找/换字幕
+            var openUrl = Notifier.GetDetailsUrl(eventArgs.Item.Id, config);
+            await Notifier.SendAsync(title, message, config, config.GetPriority("SubtitleFailure"), imageUrl, null, openUrl);
         }
     }
 
@@ -545,13 +573,27 @@ namespace Jellyfin.Plugin.Chatz
             return $"{config.JellyfinServerUrl.TrimEnd('/')}/Items/{coverId}/Images/Primary";
         }
 
-        internal static async Task SendAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl = null, IEnumerable<string>? extraTags = null)
+        /// <summary>
+        /// 拼条目详情页的深链地址，放进 Chatz 的 extras.url ——
+        /// 网页端会渲染成「在 Jellyfin 中打开」按钮，点通知直达这部片子/这一集。
+        ///
+        /// · id 用无连字符的 N 格式（Jellyfin Web 路由的形态，实测可直达详情页）
+        /// · 不需要 serverId：用户登录了哪个服务器，Web 客户端自己知道
+        /// · JellyfinServerUrl 没填就返回 null —— 跟封面一样，深链是可选项
+        /// </summary>
+        internal static string? GetDetailsUrl(Guid itemId, PluginConfiguration config)
+        {
+            if (itemId == Guid.Empty || string.IsNullOrWhiteSpace(config.JellyfinServerUrl)) return null;
+            return $"{config.JellyfinServerUrl.TrimEnd('/')}/web/#/details?id={itemId.ToString("N")}";
+        }
+
+        internal static async Task SendAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl = null, IEnumerable<string>? extraTags = null, string? openUrl = null)
         {
             if (config == null) return;
 
             var tasks = new List<Task>();
             if (config.GotifyEnabled) tasks.Add(SendGotifyAsync(title, message, config, priority, imageUrl));
-            if (config.ChatzEnabled) tasks.Add(SendChatzAsync(title, message, config, priority, imageUrl, extraTags));
+            if (config.ChatzEnabled) tasks.Add(SendChatzAsync(title, message, config, priority, imageUrl, extraTags, openUrl));
 
             if (tasks.Count == 0)
             {
@@ -589,7 +631,7 @@ namespace Jellyfin.Plugin.Chatz
         /// Chatz：POST {url}/hook/{应用Token}
         /// Token 是 Chatz 里「应用」的应用 Token（applications.token），不是全局 AUTH_TOKEN。
         /// </summary>
-        private static async Task SendChatzAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl, IEnumerable<string>? extraTags = null)
+        private static async Task SendChatzAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl, IEnumerable<string>? extraTags = null, string? openUrl = null)
         {
             if (string.IsNullOrWhiteSpace(config.ChatzUrl) || string.IsNullOrWhiteSpace(config.ChatzToken))
             {
@@ -599,7 +641,7 @@ namespace Jellyfin.Plugin.Chatz
 
             try
             {
-                var payload = BuildPayload(title, message, config, priority, imageUrl);
+                var payload = BuildPayload(title, message, config, priority, imageUrl, openUrl);
 
                 // channel_id 只有显式指定才带上，否则走应用自身的默认频道
                 if (config.ChatzChannelId > 0) payload["channel_id"] = config.ChatzChannelId;
@@ -630,7 +672,7 @@ namespace Jellyfin.Plugin.Chatz
             }
         }
 
-        private static Dictionary<string, object> BuildPayload(string title, string message, PluginConfiguration config, int priority, string? imageUrl)
+        private static Dictionary<string, object> BuildPayload(string title, string message, PluginConfiguration config, int priority, string? imageUrl, string? openUrl = null)
         {
             string finalMessage = message;
             // 封面图片：extras 给客户端/App 用，markdown 那段给只看正文的 WebUI 用
@@ -644,22 +686,31 @@ namespace Jellyfin.Plugin.Chatz
                 ["priority"] = priority,
             };
 
-            var extras = BuildExtras(imageUrl);
+            var extras = BuildExtras(imageUrl, openUrl);
             if (extras != null) payload["extras"] = extras;
 
             return payload;
         }
 
-        private static Dictionary<string, object>? BuildExtras(string? imageUrl)
+        private static Dictionary<string, object>? BuildExtras(string? imageUrl, string? openUrl = null)
         {
-            if (string.IsNullOrEmpty(imageUrl)) return null;
+            if (string.IsNullOrEmpty(imageUrl) && string.IsNullOrEmpty(openUrl)) return null;
 
-            return new Dictionary<string, object>
+            var extras = new Dictionary<string, object>();
+            if (!string.IsNullOrEmpty(imageUrl))
             {
-                ["image"] = imageUrl!,
-                ["client::display"] = new Dictionary<string, object> { ["contentType"] = "text/markdown" },
-                ["client::notification"] = new Dictionary<string, object> { ["bigImageUrl"] = imageUrl! },
-            };
+                extras["image"] = imageUrl!;
+                extras["client::display"] = new Dictionary<string, object> { ["contentType"] = "text/markdown" };
+                extras["client::notification"] = new Dictionary<string, object> { ["bigImageUrl"] = imageUrl! };
+            }
+            if (!string.IsNullOrEmpty(openUrl))
+            {
+                // 深链：网页端渲染成「在 Jellyfin 中打开」按钮。urlLabel 是按钮文字，
+                // 发送方说了算 —— 服务端和客户端都不翻译它
+                extras["url"] = openUrl!;
+                extras["urlLabel"] = "在 Jellyfin 中打开";
+            }
+            return extras;
         }
 
         private static List<string> ParseTags(string? raw)

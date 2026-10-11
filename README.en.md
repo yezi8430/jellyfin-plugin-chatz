@@ -29,6 +29,7 @@ Chatz ships as three independent repositories. **The server is required**; the c
 - **Per-notification settings**: enable switch, priority (0-10), cover image on/off
 - **Custom templates**: both title and body are editable and support variables (see the table below); leave blank to use the defaults
 - **Cover images**: the Jellyfin cover URL goes straight into `extras.image`, so both the app and the web UI render it
+- **Detail-page deep link**: notifications carry `extras.url` (requires the "External Jellyfin URL" setting); the web UI shows an "Open in Jellyfin" button that jumps straight to that movie/episode's detail page. Deletion notices carry no link (the item is gone, it would 404)
 - **Markdown mode**: appends `![cover](url)` to the body so web clients that only read the body still show the image
 - **Playback progress**: fires once at a configurable percentage (default 90%) with a cooldown; optionally skip the "playback stopped" notification for episodes that already sent progress
 - **Library notification throttling**: new media is delivered one by one (keeps cover and path) queued at ~40/min, so it doesn't trip Chatz rate limiting
@@ -69,10 +70,13 @@ Dashboard → Plugins → **Chatz 推送**.
 | Chatz app token | The app token from Chatz WebUI — **not the global AUTH_TOKEN** |
 | Chatz channel ID | Optional; blank or 0 = the app's own default channel |
 | Chatz tags | Optional, comma separated, matched by server-side routing rules |
-| External Jellyfin URL | Used to build cover image URLs, e.g. `https://jellyfin.example.com` |
+| External Jellyfin URL | Builds cover image URLs **and detail-page deep links**, e.g. `https://jellyfin.example.com` |
 
 > Chatz folds messages from the same app, channel and title within 5 minutes into one.
-> To keep every notification separate, include a variable (e.g. `{itemName}`) in the title template.
+> **The default titles include `{workName}` / `{seriesName}`, so folding groups by work**:
+> a season drop becomes one card (whose "Open" button goes straight to that series), while
+> different works stay separate. For fully independent notifications, use a finer variable
+> (e.g. `{mediaName}`) in the title template instead.
 
 ### Template variables
 
@@ -81,6 +85,7 @@ Usable in both title and body (the config page shows the same list under "Variab
 | Variable | Meaning | Notes |
 |---|---|---|
 | `{itemName}` | Item name | Episode title for series; movie title for films |
+| `{workName}` | Work name | The series for episodes/seasons; the film title for movies. **Keep it in the title so Chatz folds by work** |
 | `{seriesName}` | Series | Equals the item name for non-series items |
 | `{mediaName}` | Media name | Same as series in playback notifications; the entry name in library notifications |
 | `{seasonNumber}` | Season number | Plain number, 0 for non-series |
