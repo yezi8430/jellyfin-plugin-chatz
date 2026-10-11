@@ -8,6 +8,18 @@ Push Jellyfin events to **Chatz** or **Gotify**. Both can be enabled at the same
 
 > Requires **Jellyfin 12.x** (targets net10.0, built against Jellyfin.Controller 12.1.0)
 
+## Related projects
+
+Chatz ships as three independent repositories. **The server is required**; the client and the plugin are optional:
+
+| Component | Repository | License | Notes |
+|---|---|---|---|
+| **Server** | [yezi8430/Chatz](https://github.com/yezi8430/Chatz) | MIT | Node.js + SQLite, web UI included — this is what the plugin pushes to |
+| **Android client** | [yezi8430/Chatz_Android](https://github.com/yezi8430/Chatz_Android) | MIT | Native app; also works with Gotify / ntfy |
+| **Jellyfin plugin** (this repo) | [yezi8430/jellyfin-plugin-chatz](https://github.com/yezi8430/jellyfin-plugin-chatz) | GPL-2.0 | Pushes Jellyfin playback / library events into Chatz |
+
+> This plugin is GPL-2.0 only because it references Jellyfin's GPL packages, so its license has to follow. Server and client are both MIT.
+
 ## Features
 
 - **Bilingual UI**: the config page follows your Jellyfin interface language (Chinese / English), falling back to Chinese when no English is available

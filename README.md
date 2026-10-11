@@ -8,6 +8,18 @@
 
 > 适用版本：**Jellyfin 12.x**（插件目标框架 net10.0，对应 Jellyfin.Controller 12.1.0）
 
+## 相关项目
+
+Chatz 由三个各自独立的仓库组成。**服务端是必须的**，客户端和插件按需取用：
+
+| 组件 | 仓库 | 许可 | 说明 |
+|---|---|---|---|
+| **服务端** | [yezi8430/Chatz](https://github.com/yezi8430/Chatz) | MIT | Node.js + SQLite，自带网页端；插件推的就是它 |
+| **Android 客户端** | [yezi8430/Chatz_Android](https://github.com/yezi8430/Chatz_Android) | MIT | 原生 App；也兼容 Gotify / ntfy |
+| **Jellyfin 插件**（本仓库） | [yezi8430/jellyfin-plugin-chatz](https://github.com/yezi8430/jellyfin-plugin-chatz) | GPL-2.0 | 把 Jellyfin 的播放 / 媒体库事件推到 Chatz |
+
+> 本插件用 GPL-2.0 是因为它引用了 Jellyfin 的 GPL 包，许可得跟着走。服务端与客户端都是 MIT。
+
 ## 特性
 
 - **中英双语**：配置页跟随 Jellyfin 的界面语言自动切换中文 / 英文（取不到英文就回落中文）
