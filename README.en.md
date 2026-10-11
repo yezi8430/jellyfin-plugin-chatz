@@ -32,6 +32,7 @@ Chatz ships as three independent repositories. **The server is required**; the c
 - **Custom templates**: both title and body are editable and support variables (see the table below); leave blank to use the defaults
 - **Cover images**: the Jellyfin cover URL goes straight into `extras.image`, so both the app and the web UI render it
 - **Detail-page deep link**: notifications carry `extras.url` (requires the "External Jellyfin URL" setting); the web UI shows an "Open in Jellyfin" button that jumps straight to that movie/episode's detail page. Deletion notices carry no link (the item is gone, it would 404)
+- **Broken links get marked on deletion**: deletion notices carry `extras.removedUrl`, and Chatz greys out the "Open" button on older notifications pointing at it, labelling it "deleted" — history stays honest (it worked then, the thing is gone now) instead of leaving a button that always 404s
 - **Markdown mode**: appends `![cover](url)` to the body so web clients that only read the body still show the image
 - **Playback progress**: fires once at a configurable percentage (default 90%) with a cooldown; optionally skip the "playback stopped" notification for episodes that already sent progress
 - **Library notification throttling**: new media is delivered one by one (keeps cover and path) queued at ~40/min, so it doesn't trip Chatz rate limiting

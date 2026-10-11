@@ -592,7 +592,10 @@ namespace Jellyfin.Plugin.Chatz
             var imageUrl = coverId.HasValue ? Notifier.GetCoverUrl(coverId.Value, config) : null;
 
             // ⚠️ 深链同理：删除的条目详情页必然 404 ⇒ 删除通知不带 url。
+            // 但**带上 removedUrl**（被删条目的地址）：Chatz 服务端会据此把历史通知里
+            // 那个按钮标记成灰色「已删除」——不是偷偷摘掉，而是让历史保持诚实。
             var openUrl = ev.Added ? Notifier.GetDetailsUrl(ev.ItemId, config) : null;
+            var removedUrl = ev.Added ? null : Notifier.GetDetailsUrl(ev.ItemId, config);
 
             // 自动带上语义标签，方便在 Chatz 里用路由规则做静默 / 分流 / 转发
             var tags = ev.Added
@@ -602,7 +605,7 @@ namespace Jellyfin.Plugin.Chatz
             Console.WriteLine($"[Notify][Debug] 媒体库{(ev.Added ? "新增" : "删除")}投递: {name} [{typeName}]"
                 + (isEpisode ? $" 剧={workName} 封面={(imageUrl != null ? "有" : "无")}" : ""));
 
-            await Notifier.SendAsync(title, message, config, config.GetPriority(key), imageUrl, tags, openUrl);
+            await Notifier.SendAsync(title, message, config, config.GetPriority(key), imageUrl, tags, openUrl, removedUrl);
         }
     }
 
@@ -711,13 +714,13 @@ namespace Jellyfin.Plugin.Chatz
             return $"{config.JellyfinServerUrl.TrimEnd('/')}/web/#/details?id={itemId.ToString("N")}";
         }
 
-        internal static async Task SendAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl = null, IEnumerable<string>? extraTags = null, string? openUrl = null)
+        internal static async Task SendAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl = null, IEnumerable<string>? extraTags = null, string? openUrl = null, string? removedUrl = null)
         {
             if (config == null) return;
 
             var tasks = new List<Task>();
             if (config.GotifyEnabled) tasks.Add(SendGotifyAsync(title, message, config, priority, imageUrl));
-            if (config.ChatzEnabled) tasks.Add(SendChatzAsync(title, message, config, priority, imageUrl, extraTags, openUrl));
+            if (config.ChatzEnabled) tasks.Add(SendChatzAsync(title, message, config, priority, imageUrl, extraTags, openUrl, removedUrl));
 
             if (tasks.Count == 0)
             {
@@ -755,7 +758,7 @@ namespace Jellyfin.Plugin.Chatz
         /// Chatz：POST {url}/hook/{应用Token}
         /// Token 是 Chatz 里「应用」的应用 Token（applications.token），不是全局 AUTH_TOKEN。
         /// </summary>
-        private static async Task SendChatzAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl, IEnumerable<string>? extraTags = null, string? openUrl = null)
+        private static async Task SendChatzAsync(string title, string message, PluginConfiguration config, int priority, string? imageUrl, IEnumerable<string>? extraTags = null, string? openUrl = null, string? removedUrl = null)
         {
             if (string.IsNullOrWhiteSpace(config.ChatzUrl) || string.IsNullOrWhiteSpace(config.ChatzToken))
             {
@@ -765,7 +768,7 @@ namespace Jellyfin.Plugin.Chatz
 
             try
             {
-                var payload = BuildPayload(title, message, config, priority, imageUrl, openUrl);
+                var payload = BuildPayload(title, message, config, priority, imageUrl, openUrl, removedUrl);
 
                 // channel_id 只有显式指定才带上，否则走应用自身的默认频道
                 if (config.ChatzChannelId > 0) payload["channel_id"] = config.ChatzChannelId;
@@ -796,7 +799,7 @@ namespace Jellyfin.Plugin.Chatz
             }
         }
 
-        private static Dictionary<string, object> BuildPayload(string title, string message, PluginConfiguration config, int priority, string? imageUrl, string? openUrl = null)
+        private static Dictionary<string, object> BuildPayload(string title, string message, PluginConfiguration config, int priority, string? imageUrl, string? openUrl = null, string? removedUrl = null)
         {
             string finalMessage = message;
             // 封面图片：extras 给客户端/App 用，markdown 那段给只看正文的 WebUI 用
@@ -810,15 +813,15 @@ namespace Jellyfin.Plugin.Chatz
                 ["priority"] = priority,
             };
 
-            var extras = BuildExtras(imageUrl, openUrl);
+            var extras = BuildExtras(imageUrl, openUrl, removedUrl);
             if (extras != null) payload["extras"] = extras;
 
             return payload;
         }
 
-        private static Dictionary<string, object>? BuildExtras(string? imageUrl, string? openUrl = null)
+        private static Dictionary<string, object>? BuildExtras(string? imageUrl, string? openUrl = null, string? removedUrl = null)
         {
-            if (string.IsNullOrEmpty(imageUrl) && string.IsNullOrEmpty(openUrl)) return null;
+            if (string.IsNullOrEmpty(imageUrl) && string.IsNullOrEmpty(openUrl) && string.IsNullOrEmpty(removedUrl)) return null;
 
             var extras = new Dictionary<string, object>();
             if (!string.IsNullOrEmpty(imageUrl))
@@ -833,6 +836,12 @@ namespace Jellyfin.Plugin.Chatz
                 // 发送方说了算 —— 服务端和客户端都不翻译它
                 extras["url"] = openUrl!;
                 extras["urlLabel"] = "在 Jellyfin 中打开";
+            }
+            if (!string.IsNullOrEmpty(removedUrl))
+            {
+                // 删除类通知专属：告诉 Chatz「这个东西已经被删了」。
+                // 服务端据此把历史消息里指向它的按钮标记成灰色「已删除」（见 markUrlGone）
+                extras["removedUrl"] = removedUrl!;
             }
             return extras;
         }
