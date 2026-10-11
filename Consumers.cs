@@ -316,17 +316,20 @@ namespace Jellyfin.Plugin.Chatz
         private const int MaxQueueLength = 2000;
 
         /// <summary>
-        /// 入队时就把要用的字段摘出来，**不持有 BaseItem 引用** ——
-        /// 一次扫描可能上万条，长期持有 BaseItem 很占内存。
+        /// 入队时只摘「事件那一刻就确定有值」的字段（名字/类型/是否单集），**不摘父子关系**。
         ///
-        /// ItemId / WorkName 是给「深链」用的：
-        ///   · ItemId  → extras.url 跳详情页，必须用**条目自己**的 Id
-        ///     （剧集封面取 SeriesId，但「新增了第 3 集」要跳到第 3 集，不是剧集页）
-        ///   · WorkName → 标题模板的 {workName}：Episode/Season 用所属剧名，
-        ///     电影/剧集用条目名。标题带作品名 ⇒ Chatz 的折叠变成按作品分组，
-        ///     主卡的 extras.url（来自第一条）就永远指向正确的作品。
+        /// 为什么 SeriesId / SeriesName / 封面 id 不在这里取：实测发现 ItemAdded 触发的那一刻，
+        /// 单集的这两个字段**还没落库**（症状：标题落回单集名 ⇒ 同剧的集折不到一起；
+        /// 封面退化成去要单集自己的主图 ⇒ 404 挂一张裂图）。所以这些留到派发时再查 ——
+        /// 那时至少已经过了限速的 1.5 秒，通常已经写进去了（见 DispatchAsync）。
+        ///
+        /// ⚠️ IsEpisode 必须**入队时**摘下来：删除的条目在派发时已经不在库里，
+        ///    回查拿不到对象，就只能靠这个快照位来判断"这一条是不是单集"
+        ///    （决定了要不要用「所属剧」当作品名、能不能带封面）。
+        ///
+        /// 也不持有 BaseItem 引用：一次扫描可能上万条，长期持有很占内存。
         /// </summary>
-        private readonly record struct MediaEvent(Guid CoverId, Guid ItemId, string WorkName, string Name, string TypeName, string Path, bool Added);
+        private readonly record struct MediaEvent(Guid ItemId, string Name, string TypeName, string Path, bool Added, bool IsEpisode);
 
         public MediaLibraryNotifier(ILibraryManager libraryManager)
         {
@@ -359,10 +362,16 @@ namespace Jellyfin.Plugin.Chatz
             _cts?.Dispose();
         }
 
-        // ★ 类型过滤：只处理真正的影视媒体，忽略 Person/Genre/Studio/Year 等元数据实体
+        // ★ 类型过滤：只处理真正的「内容」，忽略两类东西
+        //   1) Person / Genre / Studio / Year 等元数据实体（本来就不该通知）
+        //   2) **Series / Season** —— 它们是扫描的**结构性副产品**：
+        //      往媒体库放一季剧，Jellyfin 会逐个报「新增 剧集」「新增 季」「新增 单集×N」，
+        //      对用户有意义的只有单集和电影。实测加两集动画会收到 3 条通知
+        //      （剧集+季折成一条 ×2，再加上两集），前一条纯属噪音。
+        //      ⇒ 只留 Movie / Episode。（想恢复剧集/季通知就加回这两个类型）
         private static bool IsMediaItem(BaseItem item)
         {
-            return item is Movie || item is Series || item is Season || item is Episode;
+            return item is Movie || item is Episode;
         }
 
         /// <summary>给 {mediaType} 变量和自动标签用的中文类型名</summary>
@@ -397,26 +406,48 @@ namespace Jellyfin.Plugin.Chatz
                 return;
             }
 
-            // Episode 用所属剧集的海报（和播放通知的取图规则保持一致）
-            var coverId = (item is Episode ep && ep.SeriesId != Guid.Empty) ? ep.SeriesId : item.Id;
-
-            // 标题用的「作品名」：单集/季归到所属剧，电影/剧集就是自己 ——
-            // 这样同一部作品的条目才会被 Chatz 折叠到一起（按作品分组）
-            string workName;
-            if (item is Episode ep2 && !string.IsNullOrEmpty(ep2.SeriesName)) workName = ep2.SeriesName;
-            else if (item is Season season && !string.IsNullOrEmpty(season.SeriesName)) workName = season.SeriesName;
-            else workName = item.Name ?? "未知媒体";
-
+            // 只摘即时字段，父子关系留给派发时查（原因见 MediaEvent 的注释）
             _queue.Enqueue(new MediaEvent(
-                coverId,
                 item.Id,
-                workName,
                 item.Name ?? "未知媒体",
                 MediaTypeName(item),
                 item.Path ?? string.Empty,
-                added));
+                added,
+                item is Episode));
 
             _signal.Release();
+        }
+
+        /// <summary>
+        /// 派发时按 id 重取条目。取不到（比如删除的条目、或库正在重扫）返回 null。
+        /// 绝不抛异常 —— 这里的目标是"能补就补"，补不到也照常回落快照。
+        /// </summary>
+        private BaseItem? TryGetItem(Guid id)
+        {
+            try { return _libraryManager.GetItemById(id); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// 作品名的**路径兜底**：单集通知在拿不到 SeriesName 时用。
+        ///
+        /// 目录约定是 `剧名/Season XX/文件`，所以取「文件所在目录的上一级目录名」
+        /// 就是剧名：/media/anime/进击的巨人/Season 1/xxx.mp4 → 进击的巨人。
+        /// ⚠️ 只用于单集兜底，**不能给电影用**（电影的路径上一级是 /media/movies 这种库目录名）。
+        /// </summary>
+        private static string? WorkNameFromPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            try
+            {
+                var dir = System.IO.Path.GetDirectoryName(path);
+                if (string.IsNullOrEmpty(dir)) return null;
+                var parent = System.IO.Path.GetDirectoryName(dir);
+                if (string.IsNullOrEmpty(parent)) return null;
+                var name = System.IO.Path.GetFileName(parent);
+                return string.IsNullOrEmpty(name) ? null : name;
+            }
+            catch { return null; }
         }
 
         /// <summary>
@@ -443,7 +474,17 @@ namespace Jellyfin.Plugin.Chatz
             Console.WriteLine("[Notify] 媒体库通知队列已停止");
         }
 
-        private static async Task DispatchAsync(MediaEvent ev)
+        /// <summary>
+        /// 派发一条媒体库通知。
+        ///
+        /// **为什么要"回查"**：入队是在 ItemAdded 回调里做的，而那一刻单集的
+        /// SeriesId / SeriesName 可能还没落库（实测踩到两个症状）：
+        ///   · 标题里的 {workName} 落回单集名 ⇒ 同一部剧的两集标题不同 ⇒ 折不到一起
+        ///   · 封面退化成要单集自己的主图 ⇒ 404 ⇒ 正文里挂一张裂图
+        /// 所以这里按 id 重取一次条目（此时至少过了 SendIntervalMs），补全父子关系；
+        /// 拿不到就按下面的顺序兜底，**宁可少显示也不显示错的**。
+        /// </summary>
+        private async Task DispatchAsync(MediaEvent ev)
         {
             var config = Plugin.Instance?.Configuration;
             if (config == null) return;
@@ -452,31 +493,74 @@ namespace Jellyfin.Plugin.Chatz
             // 排队期间用户可能刚好关掉了这一类，这里再确认一次
             if (!config.NotificationTypes.Contains(key)) return;
 
+            BaseItem? item = TryGetItem(ev.ItemId);
+
+            // 新增的单集如果连所属剧都还没认出来，说明元数据还在落库 —— 等一下重取一次。
+            // （只对"新增的单集且信息不全"生效，不影响其它条目、也不影响删除）
+            if (ev.Added && item is Episode pending
+                && (pending.SeriesId == Guid.Empty || string.IsNullOrEmpty(pending.SeriesName)))
+            {
+                try { await Task.Delay(2000, _cts?.Token ?? CancellationToken.None); } catch { }
+                var again = TryGetItem(ev.ItemId);
+                if (again != null) item = again;
+            }
+
+            var name = !string.IsNullOrEmpty(item?.Name) ? item!.Name! : ev.Name;
+            var path = !string.IsNullOrEmpty(item?.Path) ? item!.Path! : ev.Path;
+            var typeName = item != null ? MediaTypeName(item) : ev.TypeName;
+
+            // 是不是单集：优先看回查到的真对象；删除的条目回查是 null，用入队快照。
+            var isEpisode = item is Episode || (item == null && ev.IsEpisode);
+            var episode = item as Episode;
+
+            // 作品名：单集归到所属剧（Chatz 的折叠按作品分组就靠它），电影就是条目名。
+            // 拿不到 SeriesName 时用**路径兜底**（剧名/Season XX/文件 → 取剧名），
+            // 这样即便元数据还没落库，同一部剧的两集标题也一致 ⇒ 能折到一起。
+            var seriesId = episode?.SeriesId ?? Guid.Empty;
+            var workName = name;
+            if (isEpisode)
+            {
+                var seriesName = episode?.SeriesName ?? string.Empty;
+                if (string.IsNullOrEmpty(seriesName)) seriesName = WorkNameFromPath(path) ?? string.Empty;
+                if (!string.IsNullOrEmpty(seriesName)) workName = seriesName;
+            }
+
             var title = config.GetTitleTemplate(key)
-                .Replace("{workName}", ev.WorkName)
-                .Replace("{mediaName}", ev.Name)
-                .Replace("{mediaType}", ev.TypeName)
-                .Replace("{path}", ev.Path);
+                .Replace("{workName}", workName)
+                .Replace("{mediaName}", name)
+                .Replace("{mediaType}", typeName)
+                .Replace("{path}", path);
 
             var message = config.GetTemplate(key)
-                .Replace("{workName}", ev.WorkName)
-                .Replace("{mediaName}", ev.Name)
-                .Replace("{mediaType}", ev.TypeName)
-                .Replace("{path}", ev.Path);
+                .Replace("{workName}", workName)
+                .Replace("{mediaName}", name)
+                .Replace("{mediaType}", typeName)
+                .Replace("{path}", path);
 
+            // 封面：单集一律用**所属剧**的海报（和播放通知的取图规则一致）；
+            // 电影用自己的 id。
+            // ⚠️ 单集拿不到 SeriesId 时**宁可不带封面** —— 退而求其次去要单集自己的
+            //    主图会 404，正文里就是一张裂图（实测踩过）。
             // ⚠️ 删除的条目已经从库里移除了，/Items/{id}/Images/Primary 必然 404
-            //    ⇒ 删除通知一律不带封面，免得正文里挂一个破图。
-            var imageUrl = (ev.Added && config.IsCoverEnabled(key)) ? Notifier.GetCoverUrl(ev.CoverId, config) : null;
+            //    ⇒ 删除通知一律不带封面。
+            Guid? coverId = null;
+            if (ev.Added && config.IsCoverEnabled(key))
+            {
+                if (isEpisode) { if (seriesId != Guid.Empty) coverId = seriesId; }
+                else coverId = ev.ItemId;
+            }
+            var imageUrl = coverId.HasValue ? Notifier.GetCoverUrl(coverId.Value, config) : null;
 
             // ⚠️ 深链同理：删除的条目详情页必然 404 ⇒ 删除通知不带 url。
             var openUrl = ev.Added ? Notifier.GetDetailsUrl(ev.ItemId, config) : null;
 
             // 自动带上语义标签，方便在 Chatz 里用路由规则做静默 / 分流 / 转发
             var tags = ev.Added
-                ? new[] { "新增媒体", ev.TypeName }
-                : new[] { "删除媒体", ev.TypeName };
+                ? new[] { "新增媒体", typeName }
+                : new[] { "删除媒体", typeName };
 
-            Console.WriteLine($"[Notify][Debug] 媒体库{(ev.Added ? "新增" : "删除")}投递: {ev.Name} [{ev.TypeName}]");
+            Console.WriteLine($"[Notify][Debug] 媒体库{(ev.Added ? "新增" : "删除")}投递: {name} [{typeName}]"
+                + (isEpisode ? $" 剧={workName} 封面={(imageUrl != null ? "有" : "无")}" : ""));
 
             await Notifier.SendAsync(title, message, config, config.GetPriority(key), imageUrl, tags, openUrl);
         }

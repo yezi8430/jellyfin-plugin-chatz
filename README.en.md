@@ -24,6 +24,8 @@ Chatz ships as three independent repositories. **The server is required**; the c
 
 - **Bilingual UI**: the config page follows your Jellyfin interface language (Chinese / English), falling back to Chinese when no English is available
 - **8 notification types**: sign-in success / failure, playback start / stop, playback progress, media added / removed, subtitle download failure
+- **Library notifications cover content only**: movies and episodes. Series / seasons are structural by-products of a scan (adding one season makes Jellyfin report "series added", "season added", "episodes added ×N"), so they are no longer notified separately — dropping two anime episodes yields a single "Media added · Series ×2" card
+- **Episode covers use the series poster**; when the series can't be resolved the notification simply carries no cover instead of a broken 404 image
 - **Two push targets**: Chatz and Gotify have independent toggles and can run together
 - **Webhook forwarding**: the plugin posts to Chatz via its webhook endpoint (`POST /hook/{appToken}`); with a Chatz server-side routing rule (the "Call Webhook" action) matching messages can be forwarded to any HTTP endpoint (ntfy, DingTalk, Feishu, your own service, … — the server has SSRF protection)
 - **Per-notification settings**: enable switch, priority (0-10), cover image on/off
