@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yezi8430/jellyfin-plugin-chatz/main/images/logo.png?v=2",
     "versions": [
       {
+        "version": "1.1.2.0",
+        "changelog": "单集封面按路径找回所属剧（元数据没落库时也能出图）",
+        "targetAbi": "12.1.0.0",
+        "sourceUrl": "https://github.com/yezi8430/jellyfin-plugin-chatz/releases/download/v1.1.2/Chatz-1.1.2.0.zip",
+        "checksum": "45106640bb0fa3a46ebbad26368362b7",
+        "timestamp": "2026-10-11T18:37:40Z"
+      },
+      {
         "version": "1.1.1.0",
         "changelog": "修复单集的折叠与封面（派发时回查所属剧）；媒体库通知只推电影和单集，不再推送剧集/季",
         "targetAbi": "12.1.0.0",
