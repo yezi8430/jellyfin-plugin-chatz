@@ -451,6 +451,36 @@ namespace Jellyfin.Plugin.Chatz
         }
 
         /// <summary>
+        /// 按**路径**找回单集所属的剧 —— 单集封面必须用剧的海报，而剧的 id/名字
+        /// 有时候两种来源都拿不到：扫描瞬间元数据还没落库（回查也还是空），
+        /// 或者条目已经被删（对象都没了）。这时还有一条路：目录结构本身就在库里。
+        ///
+        /// 顺序：
+        ///   1) Season 目录对应的条目 → 它的 SeriesId → 取剧（最准）
+        ///   2) 直接按「剧名目录」的路径找（Season 目录可能还没建索引）
+        /// 找不到返回 null（调用方会退到「按目录名当剧名、不带封面」）。
+        /// </summary>
+        private Series? FindSeriesByPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            try
+            {
+                var seasonDir = System.IO.Path.GetDirectoryName(path);      // .../Season 1
+                if (string.IsNullOrEmpty(seasonDir)) return null;
+                var seriesDir = System.IO.Path.GetDirectoryName(seasonDir);  // .../进击的巨人
+                if (string.IsNullOrEmpty(seriesDir)) return null;
+
+                if (_libraryManager.FindByPath(seasonDir, true) is Season season && season.SeriesId != Guid.Empty)
+                {
+                    if (_libraryManager.GetItemById(season.SeriesId) is Series byId) return byId;
+                }
+
+                return _libraryManager.FindByPath(seriesDir, true) as Series;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
         /// 串行 worker：一次取一条、发一条、歇一会儿再取 —— 最简单可靠地压住发送频率。
         /// （原来的实现是 Timer + 两个 ConcurrentBag，drain 之后到 finally 复位之间的
         ///   新条目会因为 _timerStarted 仍为 true 而丢失，这里顺带把那个竞态一并消掉了）
@@ -509,18 +539,28 @@ namespace Jellyfin.Plugin.Chatz
             var path = !string.IsNullOrEmpty(item?.Path) ? item!.Path! : ev.Path;
             var typeName = item != null ? MediaTypeName(item) : ev.TypeName;
 
-            // 是不是单集：优先看回查到的真对象；删除的条目回查是 null，用入队快照。
+            // 作品名 / 所属剧：单集归到所属剧（Chatz 的折叠按作品分组、封面都靠它），
+            // 电影就是条目名。三级兜底，越靠前越准：
+            //   1) 回查到的条目上的 SeriesName / SeriesId
+            //   2) 按路径找回剧（目录结构就在库里，删掉的单集也能找到还在的剧）
+            //   3) 按目录名当剧名（只有名字，没有 id ⇒ 不带封面）
             var isEpisode = item is Episode || (item == null && ev.IsEpisode);
-            var episode = item as Episode;
+            var seriesId = (item as Episode)?.SeriesId ?? Guid.Empty;
+            var seriesName = (item as Episode)?.SeriesName ?? string.Empty;
 
-            // 作品名：单集归到所属剧（Chatz 的折叠按作品分组就靠它），电影就是条目名。
-            // 拿不到 SeriesName 时用**路径兜底**（剧名/Season XX/文件 → 取剧名），
-            // 这样即便元数据还没落库，同一部剧的两集标题也一致 ⇒ 能折到一起。
-            var seriesId = episode?.SeriesId ?? Guid.Empty;
+            if (isEpisode && (seriesId == Guid.Empty || string.IsNullOrEmpty(seriesName)))
+            {
+                var series = FindSeriesByPath(path);
+                if (series != null)
+                {
+                    if (seriesId == Guid.Empty) seriesId = series.Id;
+                    if (string.IsNullOrEmpty(seriesName)) seriesName = series.Name ?? string.Empty;
+                }
+            }
+
             var workName = name;
             if (isEpisode)
             {
-                var seriesName = episode?.SeriesName ?? string.Empty;
                 if (string.IsNullOrEmpty(seriesName)) seriesName = WorkNameFromPath(path) ?? string.Empty;
                 if (!string.IsNullOrEmpty(seriesName)) workName = seriesName;
             }
