@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yezi8430/jellyfin-plugin-chatz/main/images/logo.png?v=2",
     "versions": [
       {
+        "version": "1.1.0.0",
+        "changelog": "通知带详情页深链（网页端「在 Jellyfin 中打开」按钮）；默认标题带作品名，聚合折叠改为按作品分组",
+        "targetAbi": "12.1.0.0",
+        "sourceUrl": "https://github.com/yezi8430/jellyfin-plugin-chatz/releases/download/v1.1.0/Chatz-1.1.0.0.zip",
+        "checksum": "e30adf1a35f9f68fb37a529789c7d29f",
+        "timestamp": "2026-10-11T17:53:16Z"
+      },
+      {
         "version": "1.0.4.0",
         "changelog": "配置页支持中英双语",
         "targetAbi": "12.1.0.0",
